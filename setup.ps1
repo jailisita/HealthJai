@@ -3,7 +3,7 @@ param(
 )
 
 Write-Host "╔══════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║      HealthAnalytics IPS — Setup Windows             ║" -ForegroundColor Cyan
+Write-Host "║      SADA IPS — Setup Windows             ║" -ForegroundColor Cyan
 Write-Host "╚══════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 
 # 1. Check Python

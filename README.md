@@ -1,4 +1,4 @@
-# HealthAnalytics IPS — Plataforma Inteligente de Analítica Clínica
+# SADA IPS — Plataforma Inteligente de Analítica Clínica
 
 Solución FullStack para detección de riesgo médico mediante ETL, analítica de datos y Machine Learning.
 

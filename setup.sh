@@ -3,7 +3,7 @@
 set -e
 
 echo "╔══════════════════════════════════════════════════════╗"
-echo "║      HealthAnalytics IPS — Setup Inicial             ║"
+echo "║      SADA IPS — Setup Inicial             ║"
 echo "╚══════════════════════════════════════════════════════╝"
 
 # 1. Entorno virtual

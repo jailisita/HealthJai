@@ -147,7 +147,7 @@ INSTALLED_APPS += ['drf_spectacular']
 REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS'] = 'drf_spectacular.openapi.AutoSchema'
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'HealthAnalytics IPS API',
+    'TITLE': 'SADA IPS API',
     'DESCRIPTION': (
         'API REST para la Plataforma Inteligente de Analítica Clínica. '
         'Incluye módulos de ETL, analítica de datos, Machine Learning y reportes.'

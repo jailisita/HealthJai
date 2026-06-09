@@ -162,8 +162,8 @@ function mostrarMetricas(metricas, modelo, matrix) {
         datasets: [{
           label: 'Valor (%)',
           data: [acc, prec, rec, f1],
-          backgroundColor: ['#0d6efd88', '#19875488', '#ffc10788', '#0dcaf088'],
-          borderColor: ['#0d6efd', '#198754', '#ffc107', '#0dcaf0'],
+          backgroundColor: ['#8fa0e4b3', '#8cd1a2b3', '#f7d683b3', '#a2daf3b3'],
+          borderColor: ['#8fa0e4', '#8cd1a2', '#f7d683', '#a2daf3'],
           borderWidth: 2,
           borderRadius: 6
         }]

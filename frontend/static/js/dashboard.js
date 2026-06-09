@@ -1,10 +1,10 @@
 /* dashboard.js — KPIs, gráficas Chart.js */
 
 const COLORES_RIESGO = {
-  bajo:    '#198754',
-  medio:   '#ffc107',
-  alto:    '#fd7e14',
-  critico: '#dc3545',
+  bajo:    '#8cd1a2',
+  medio:   '#f7d683',
+  alto:    '#f8b38a',
+  critico: '#f3a3a3',
 };
 
 async function cargarDashboard() {
@@ -83,7 +83,7 @@ function renderGraficaEdad(data) {
     data: {
       labels: data.map(d => d.rango_edad),
       datasets: [{ label: 'Pacientes', data: data.map(d => d.total),
-                   backgroundColor: '#0d6efd99', borderColor: '#0d6efd',
+                   backgroundColor: '#8fa0e4b3', borderColor: '#8fa0e4',
                    borderWidth: 1, borderRadius: 6 }]
     },
     options: { responsive: true, plugins: { legend: { display: false } },
@@ -94,7 +94,7 @@ function renderGraficaEdad(data) {
 function renderGraficaIMC(data) {
   if (!data || !Object.keys(data).length) return;
   const labels = { bajo_peso:'Bajo Peso', normal:'Normal', sobrepeso:'Sobrepeso', obesidad:'Obesidad' };
-  const colors = { bajo_peso:'#0dcaf0', normal:'#198754', sobrepeso:'#ffc107', obesidad:'#dc3545' };
+  const colors = { bajo_peso:'#a2daf3', normal:'#8cd1a2', sobrepeso:'#f7d683', obesidad:'#f3a3a3' };
   const keys = Object.keys(data);
   new Chart(document.getElementById('chart-imc'), {
     type: 'pie',
@@ -115,7 +115,7 @@ function renderGraficaDiagnosticos(data) {
     data: {
       labels: data.map(d => d.diagnostico_preliminar || 'Sin diagnóstico'),
       datasets: [{ label: 'Casos', data: data.map(d => d.total),
-                   backgroundColor: '#6610f299', borderColor: '#6610f2',
+                   backgroundColor: '#c6a5ecb3', borderColor: '#c6a5ec',
                    borderWidth: 1, borderRadius: 4 }]
     },
     options: {
