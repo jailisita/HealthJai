@@ -180,6 +180,8 @@ def predecir_paciente(paciente_id: int, modelo_id: int = None) -> dict:
 
     return {
         'paciente_id': paciente_id,
+        'nombre': f"{paciente.nombres or ''} {paciente.apellidos or ''}".strip(),
+        'riesgo_actual': paciente.riesgo_enfermedad or '—',
         'riesgo_predicho': riesgo,
         'probabilidad': probabilidad,
         'distribucion_clases': dict(zip(le.classes_, proba.tolist())),

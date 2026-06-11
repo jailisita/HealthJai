@@ -3,89 +3,453 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login — SADA IPS</title>
+  <title>Acceso — SADA IPS</title>
   {% load static %}
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   <style>
-    body { background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%); min-height:100vh; }
-    .login-card { border-radius:16px; border:0; box-shadow:0 15px 35px rgba(42,48,60,.1); }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --v950: #0f0220; --v900: #1a0533; --v800: #2d0a57; --v700: #4a1080;
+      --v600: #6520b0; --v500: #7c3aed; --v400: #8b5cf6; --v300: #a78bfa;
+      --v200: #c4b5fd; --v100: #ddd6fe; --v50: #f5f3ff;
+      --teal: #14b8a6; --rose: #f43f5e;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: var(--v950);
+      display: flex;
+      align-items: stretch;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Left panel ── */
+    .left-panel {
+      flex: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 2.5rem;
+      background: linear-gradient(160deg, var(--v900) 0%, var(--v800) 50%, #1e0445 100%);
+      overflow: hidden;
+    }
+
+    /* Animated orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      animation: float 8s ease-in-out infinite;
+    }
+    .orb-1 {
+      width: 420px; height: 420px;
+      background: radial-gradient(circle, rgba(124,58,237,0.45), transparent 70%);
+      top: -100px; left: -80px;
+      animation-delay: 0s;
+    }
+    .orb-2 {
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(20,184,166,0.25), transparent 70%);
+      bottom: 60px; right: -60px;
+      animation-delay: -3s;
+    }
+    .orb-3 {
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(244,63,94,0.18), transparent 70%);
+      top: 55%; left: 40%;
+      animation-delay: -5s;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50%       { transform: translateY(-24px) scale(1.04); }
+    }
+
+    /* Grid dots overlay */
+    .left-panel::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        radial-gradient(circle, rgba(167,139,250,0.18) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+    }
+
+    /* Brand mark */
+    .brand-mark {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .brand-mark .logo-icon {
+      width: 46px; height: 46px; border-radius: 14px;
+      background: linear-gradient(135deg, var(--v400), var(--v600));
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 24px rgba(124,58,237,0.5);
+    }
+    .brand-mark .logo-icon i { font-size: 1.4rem; color: #fff; }
+    .brand-mark .name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.35rem; font-weight: 700;
+      color: #fff; letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    .brand-mark .tagline {
+      font-size: 11px; color: var(--v200);
+      letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500;
+    }
+
+    /* Hero text */
+    .hero-block {
+      position: relative; z-index: 1;
+    }
+    .hero-block .eyebrow {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(139,92,246,0.18);
+      border: 1px solid rgba(167,139,250,0.3);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 11px; font-weight: 600;
+      color: var(--v200); letter-spacing: 0.05em; text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+    .hero-block .eyebrow .pulse {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 0 3px rgba(20,184,166,0.25);
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { box-shadow: 0 0 0 3px rgba(20,184,166,0.25); }
+      50%       { box-shadow: 0 0 0 7px rgba(20,184,166,0.08); }
+    }
+    .hero-block h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(1.8rem, 3vw, 2.4rem);
+      font-weight: 700; color: #fff;
+      line-height: 1.15; letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+    }
+    .hero-block h1 .accent {
+      background: linear-gradient(90deg, var(--v300), var(--teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-block p {
+      font-size: 0.9rem; color: rgba(196,181,253,0.7);
+      line-height: 1.65; max-width: 380px;
+    }
+
+    /* Stats strip */
+    .stats-strip {
+      position: relative; z-index: 1;
+      display: flex; gap: 1.5rem;
+    }
+    .stat-item .num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem; font-weight: 700;
+      color: #fff; letter-spacing: -0.02em;
+    }
+    .stat-item .lbl {
+      font-size: 11px; color: var(--v200);
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .stat-divider {
+      width: 1px; background: rgba(167,139,250,0.2); align-self: stretch;
+    }
+
+    /* ── Right panel ── */
+    .right-panel {
+      width: 460px;
+      flex-shrink: 0;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 3rem 3rem;
+      position: relative;
+      overflow-y: auto;
+    }
+
+    /* Subtle top accent line */
+    .right-panel::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--v500), var(--teal));
+    }
+
+    .form-section-label {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: #9893ae; margin-bottom: 1.5rem;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .form-section-label::after {
+      content: ''; flex: 1; height: 1px; background: #e4e2ed;
+    }
+
+    .form-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.55rem; font-weight: 700;
+      color: #1e1b29; letter-spacing: -0.02em;
+      margin-bottom: 0.35rem;
+    }
+    .form-subtitle {
+      font-size: 0.875rem; color: #9893ae;
+      margin-bottom: 2rem;
+    }
+
+    /* Inputs */
+    .field-wrap { margin-bottom: 1.1rem; }
+    .field-label {
+      display: block;
+      font-size: 0.78rem; font-weight: 600;
+      color: #2e2a3d; margin-bottom: 6px;
+      letter-spacing: 0.01em;
+    }
+    .input-shell {
+      display: flex; align-items: center;
+      border: 1.5px solid #e4e2ed;
+      border-radius: 11px;
+      background: #faf9fc;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+      overflow: hidden;
+    }
+    .input-shell:focus-within {
+      border-color: var(--v400);
+      box-shadow: 0 0 0 3.5px rgba(139,92,246,0.14);
+      background: #fff;
+    }
+    .input-shell .icon {
+      width: 44px; display: flex; align-items: center; justify-content: center;
+      color: #9893ae; font-size: 1rem; flex-shrink: 0;
+      transition: color 0.15s;
+    }
+    .input-shell:focus-within .icon { color: var(--v500); }
+    .input-shell input {
+      flex: 1; border: none; outline: none; background: transparent;
+      font-size: 0.875rem; color: #1e1b29;
+      padding: 0.7rem 0; font-family: 'Inter', sans-serif;
+    }
+    .input-shell input::placeholder { color: #c5c2d1; }
+    .input-shell .toggle-btn {
+      border: none; background: transparent;
+      padding: 0 12px; color: #9893ae;
+      cursor: pointer; font-size: 1rem;
+      transition: color 0.15s;
+    }
+    .input-shell .toggle-btn:hover { color: var(--v500); }
+
+    /* Error */
+    .error-box {
+      display: none;
+      background: #fff5f7;
+      border: 1px solid rgba(244,63,94,0.25);
+      border-radius: 9px;
+      padding: 0.65rem 0.9rem;
+      font-size: 0.82rem; color: #9f1239;
+      margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .error-box.hidden { display: none; }
+
+    /* Submit button */
+    .btn-login {
+      width: 100%; padding: 0.78rem;
+      background: linear-gradient(135deg, var(--v500), var(--v700));
+      border: none; border-radius: 11px;
+      color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.925rem; font-weight: 600;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(124,58,237,0.4);
+      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 1.5rem;
+    }
+    .btn-login:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--v400), var(--v600));
+      box-shadow: 0 6px 22px rgba(124,58,237,0.5);
+      transform: translateY(-1px);
+    }
+    .btn-login:active { transform: none; }
+    .btn-login:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .btn-login.loading .spinner { display: block; }
+    .btn-login.loading .btn-text { opacity: 0.85; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .footer-copy {
+      margin-top: 2rem;
+      font-size: 11px; color: #c5c2d1;
+      text-align: center;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .left-panel { display: none; }
+      .right-panel { width: 100%; padding: 2.5rem 1.75rem; }
+    }
   </style>
 </head>
-<body class="d-flex align-items-center justify-content-center">
-<div class="container" style="max-width:420px">
-  <div class="text-center mb-4">
-    <i class="bi bi-heart-pulse-fill text-primary fs-1"></i>
-    <h4 class="text-dark fw-bold mt-2">SADA IPS</h4>
-    <p class="text-muted small">Plataforma de Analítica Clínica Inteligente</p>
-  </div>
-  <div class="card login-card">
-    <div class="card-body p-4">
-      <h5 class="fw-bold mb-4">Iniciar Sesión</h5>
-      <div id="error-msg" class="alert alert-danger d-none"></div>
-      <div class="mb-3">
-        <label class="form-label fw-semibold small">Usuario</label>
-        <div class="input-group">
-          <span class="input-group-text"><i class="bi bi-person"></i></span>
-          <input type="text" class="form-control" id="username" placeholder="Nombre de usuario"
-                 onkeydown="if(event.key==='Enter') login()">
-        </div>
+<body>
+
+  <!-- ── Left decorative panel ── -->
+  <div class="left-panel">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- Brand -->
+    <div class="brand-mark">
+      <div class="logo-icon"><i class="bi bi-heart-pulse-fill"></i></div>
+      <div>
+        <div class="name">SADA IPS</div>
+        <div class="tagline">Analítica Clínica</div>
       </div>
-      <div class="mb-4">
-        <label class="form-label fw-semibold small">Contraseña</label>
-        <div class="input-group">
-          <span class="input-group-text"><i class="bi bi-lock"></i></span>
-          <input type="password" class="form-control" id="password" placeholder="Contraseña"
-                 onkeydown="if(event.key==='Enter') login()">
-          <button class="btn btn-outline-secondary" type="button"
-                  onclick="togglePass()"><i class="bi bi-eye" id="eye-icon"></i></button>
-        </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero-block">
+      <div class="eyebrow">
+        <span class="pulse"></span>
+        Sistema activo
       </div>
-      <button class="btn btn-primary w-100 py-2" onclick="login()" id="btn-login">
-        <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar
-      </button>
+      <h1>Inteligencia clínica<br>al <span class="accent">servicio</span><br>de tus pacientes</h1>
+      <p>Plataforma integrada de analítica, predicción de riesgo y seguimiento clínico para equipos de salud modernos.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-strip">
+      <div class="stat-item">
+        <div class="num">ETL</div>
+        <div class="lbl">Procesamiento</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="num">ML</div>
+        <div class="lbl">Predicción IA</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="num">3</div>
+        <div class="lbl">Roles de acceso</div>
+      </div>
     </div>
   </div>
-  <p class="text-center text-muted small mt-3">
-    © 2025 HealthAnalytics IPS · Todos los derechos reservados
-  </p>
-</div>
+
+  <!-- ── Right form panel ── -->
+  <div class="right-panel">
+
+    <div class="form-section-label">Acceso seguro</div>
+
+    <div class="form-title">Bienvenido de nuevo</div>
+    <div class="form-subtitle">Ingresa tus credenciales para continuar</div>
+
+    <div id="error-box" class="error-box hidden">
+      <i class="bi bi-exclamation-circle-fill"></i>
+      <span id="error-text"></span>
+    </div>
+
+    <div class="field-wrap">
+      <label class="field-label" for="username">Usuario</label>
+      <div class="input-shell">
+        <span class="icon"><i class="bi bi-person"></i></span>
+        <input type="text" id="username" placeholder="Nombre de usuario"
+               autocomplete="username" onkeydown="if(event.key==='Enter') login()">
+      </div>
+    </div>
+
+    <div class="field-wrap">
+      <label class="field-label" for="password">Contraseña</label>
+      <div class="input-shell">
+        <span class="icon"><i class="bi bi-lock"></i></span>
+        <input type="password" id="password" placeholder="••••••••"
+               autocomplete="current-password" onkeydown="if(event.key==='Enter') login()">
+        <button class="toggle-btn" type="button" onclick="togglePass()" tabindex="-1">
+          <i class="bi bi-eye" id="eye-icon"></i>
+        </button>
+      </div>
+    </div>
+
+    <button class="btn-login" id="btn-login" onclick="login()">
+      <div class="spinner" id="spinner"></div>
+      <span class="btn-text">Ingresar</span>
+      <i class="bi bi-arrow-right" id="arrow-icon"></i>
+    </button>
+
+    <p class="footer-copy">© 2025 SADA IPS · Todos los derechos reservados</p>
+  </div>
 
 <script>
 async function login() {
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
-  const btn = document.getElementById('btn-login');
-  const err = document.getElementById('error-msg');
+  const btn      = document.getElementById('btn-login');
+  const errBox   = document.getElementById('error-box');
+  const errText  = document.getElementById('error-text');
+
+  errBox.classList.add('hidden');
+
   if (!username || !password) {
-    err.textContent = 'Ingresa usuario y contraseña.'; err.classList.remove('d-none'); return;
+    errText.textContent = 'Ingresa tu usuario y contraseña.';
+    errBox.classList.remove('hidden'); return;
   }
-  btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Ingresando...';
+
+  btn.disabled = true;
+  btn.classList.add('loading');
+  document.getElementById('arrow-icon').style.display = 'none';
+
   try {
-    const res = await fetch('/api/auth/login/', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({username, password})
+    const res  = await fetch('/api/auth/login/', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
     });
     const data = await res.json();
     if (res.ok) {
-      localStorage.setItem('access', data.access);
-      localStorage.setItem('refresh', data.refresh);
+      localStorage.setItem('access',   data.access);
+      localStorage.setItem('refresh',  data.refresh);
       localStorage.setItem('username', data.username || username);
-      localStorage.setItem('rol', data.rol || '');
+      localStorage.setItem('rol', (data.rol || 'doctor').toLowerCase());
       window.location.href = '/';
     } else {
-      err.textContent = data.detail || 'Credenciales inválidas.'; err.classList.remove('d-none');
-      btn.disabled = false; btn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Ingresar';
+      errText.textContent = data.detail || 'Credenciales inválidas.';
+      errBox.classList.remove('hidden');
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      document.getElementById('arrow-icon').style.display = '';
     }
   } catch(e) {
-    err.textContent = 'Error de conexión con el servidor.'; err.classList.remove('d-none');
-    btn.disabled = false; btn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Ingresar';
+    errText.textContent = 'Error de conexión con el servidor.';
+    errBox.classList.remove('hidden');
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    document.getElementById('arrow-icon').style.display = '';
   }
 }
+
 function togglePass() {
-  const inp = document.getElementById('password');
+  const inp  = document.getElementById('password');
   const icon = document.getElementById('eye-icon');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
+  inp.type   = inp.type === 'password' ? 'text' : 'password';
   icon.className = inp.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
 }
 </script>

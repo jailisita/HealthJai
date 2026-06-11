@@ -2,18 +2,19 @@
 {% load static %}
 
 {% block title %}Pacientes — SADA IPS{% endblock %}
-{% block nav_pacientes %}active text-white{% endblock %}
+{% block nav_pacientes %}active{% endblock %}
 {% block page_title %}Gestión de Pacientes{% endblock %}
 
 {% block content %}
+
 <!-- Filtros -->
 <div class="card border-0 shadow-sm mb-3">
-  <div class="card-body py-2">
+  <div class="card-body py-2 px-3">
     <div class="row g-2 align-items-end">
       <div class="col-md-3">
-        <label class="form-label small fw-semibold mb-1">Riesgo</label>
+        <label class="form-label">Nivel de riesgo</label>
         <select class="form-select form-select-sm" id="filtro-riesgo" onchange="cargarPacientes()">
-          <option value="">Todos</option>
+          <option value="">Todos los niveles</option>
           <option value="bajo">Bajo</option>
           <option value="medio">Medio</option>
           <option value="alto">Alto</option>
@@ -21,7 +22,7 @@
         </select>
       </div>
       <div class="col-md-3">
-        <label class="form-label small fw-semibold mb-1">Sexo</label>
+        <label class="form-label">Sexo</label>
         <select class="form-select form-select-sm" id="filtro-sexo" onchange="cargarPacientes()">
           <option value="">Todos</option>
           <option value="M">Masculino</option>
@@ -29,64 +30,80 @@
         </select>
       </div>
       <div class="col-md-2">
-        <div class="form-check form-switch mt-3">
-          <input class="form-check-input" type="checkbox" id="filtro-critico" onchange="cargarPacientes()">
-          <label class="form-check-label small" for="filtro-critico">Solo críticos</label>
+        <div class="d-flex align-items-center gap-2 mt-3">
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" id="filtro-critico" onchange="cargarPacientes()" style="width:2.2em;height:1.2em;cursor:pointer">
+            <label class="form-check-label small fw-medium" for="filtro-critico">Solo críticos</label>
+          </div>
         </div>
       </div>
       <div class="col-md-4">
-        <label class="form-label small fw-semibold mb-1">Buscar</label>
+        <label class="form-label">Buscar</label>
         <div class="input-group input-group-sm">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
           <input type="text" class="form-control" id="busqueda" placeholder="Nombre, diagnóstico..."
                  onkeyup="filtrarLocal()">
-          <span class="input-group-text"><i class="bi bi-search"></i></span>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Tabla pacientes -->
+<!-- Tabla de pacientes -->
 <div class="card border-0 shadow-sm">
-  <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
-    <h6 class="fw-semibold mb-0">
-      Lista de Pacientes <span class="badge bg-primary ms-2" id="badge-total">0</span>
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <h6 class="card-title">
+      Lista de Pacientes
+      <span class="badge bg-primary ms-2" id="badge-total">0</span>
     </h6>
     <div class="d-flex gap-2">
-      <button onclick="descargarArchivo('/api/reportes/csv/', 'pacientes.csv')" class="btn btn-sm btn-outline-secondary">
+      <button onclick="descargarConFiltros('/api/reportes/csv/', 'pacientes.csv')" class="btn btn-sm btn-outline-secondary">
         <i class="bi bi-filetype-csv me-1"></i>CSV
       </button>
-      <button onclick="descargarArchivo('/api/reportes/excel/', 'reporte_pacientes.xlsx')" class="btn btn-sm btn-outline-success">
+      <button onclick="descargarConFiltros('/api/reportes/excel/', 'reporte_pacientes.xlsx')" class="btn btn-sm btn-outline-success">
         <i class="bi bi-file-earmark-excel me-1"></i>Excel
       </button>
-      <button onclick="descargarArchivo('/api/reportes/pdf/', 'reporte_analitica_clinica.pdf')" class="btn btn-sm btn-outline-danger">
+      <button onclick="descargarConFiltros('/api/reportes/pdf/', 'reporte_analitica_clinica.pdf')" class="btn btn-sm btn-outline-danger">
         <i class="bi bi-file-earmark-pdf me-1"></i>PDF
       </button>
     </div>
   </div>
   <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0 small">
-        <thead class="table-light">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
           <tr>
-            <th>ID</th><th>Nombre</th><th>Edad</th><th>Sexo</th>
-            <th>IMC</th><th>Glucosa</th><th>P.Sistólica</th>
-            <th>Diagnóstico</th><th>Riesgo</th><th>Crítico</th>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Edad</th>
+            <th>Sexo</th>
+            <th>IMC</th>
+            <th>Glucosa</th>
+            <th>P. Sistólica</th>
+            <th>Diagnóstico</th>
+            <th>Riesgo</th>
+            <th>Crítico</th>
           </tr>
         </thead>
         <tbody id="pacientes-tbody">
-          <tr><td colspan="10" class="text-center text-muted py-5">
-            <div class="spinner-border spinner-border-sm me-2"></div>Cargando pacientes...
-          </td></tr>
+          <tr>
+            <td colspan="10" class="text-center py-5" style="color:var(--text-secondary)">
+              <div class="spinner-border spinner-border-sm me-2" style="color:var(--violet-400)"></div>
+              Cargando pacientes...
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
   </div>
-  <div class="card-footer bg-white border-0 d-flex align-items-center justify-content-between">
-    <small class="text-muted" id="pagination-info"></small>
-    <div class="d-flex gap-1" id="pagination-controls"></div>
+  <div class="card-footer" style="background:#fff;border-top:1px solid var(--border);padding:0.7rem 1rem">
+    <div class="d-flex align-items-center justify-content-between">
+      <small style="color:var(--text-secondary)" id="pagination-info"></small>
+      <div class="d-flex gap-1" id="pagination-controls"></div>
+    </div>
   </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}

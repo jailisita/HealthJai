@@ -73,6 +73,34 @@ RANGOS_CLINICOS = {
 }
 
 
+def _reemplazar_texto_presion(df, logs):
+    """
+    Sustituye valores textuales en columnas de presión arterial por valores numéricos
+    predeterminados, ANTES de la conversión de tipos:
+      alto / alta / high  → 140
+      bajo / baja / low   →  90
+    Detecta cualquier columna cuyo nombre contenga 'presi' (presión/presion).
+    """
+    MAPA = {
+        'alto': 140, 'alta': 140, 'high': 140,
+        'bajo':  90, 'baja':  90, 'low':   90,
+    }
+    cols_presion = [c for c in df.columns if 'presi' in c.lower()]
+    reemplazados = 0
+    for col in cols_presion:
+        serie_lower = df[col].astype(str).str.strip().str.lower()
+        mask = serie_lower.isin(MAPA)
+        if mask.any():
+            df.loc[mask, col] = serie_lower[mask].map(MAPA)
+            reemplazados += int(mask.sum())
+    if reemplazados:
+        logs.append(
+            f"[TRANSFORM] Presión arterial — {reemplazados} valor(es) textual(es) "
+            f"corregidos (alto→140, bajo→90)"
+        )
+    return df, reemplazados
+
+
 def _limpiar_tipos(df: pd.DataFrame, logs: list) -> tuple[pd.DataFrame, int]:
     """Convierte tipos incorrectos; registra cuántos se corrigieron."""
     corregidos = 0
@@ -200,6 +228,7 @@ def transform(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     logs = []
     df = df.copy()
 
+    df, _ = _reemplazar_texto_presion(df, logs)
     df, corregidos = _limpiar_tipos(df, logs)
     df, duplicados = _eliminar_duplicados(df, logs)
     df, nulos = _tratar_nulos(df, logs)

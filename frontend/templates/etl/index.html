@@ -2,41 +2,50 @@
 {% load static %}
 
 {% block title %}Proceso ETL — SADA IPS{% endblock %}
-{% block nav_etl %}active text-white{% endblock %}
+{% block nav_etl %}active{% endblock %}
 {% block page_title %}Proceso ETL{% endblock %}
 
 {% block content %}
+
 <div class="row g-3 mb-4">
-  <!-- Panel de ejecución -->
+  <!-- Ejecutar ETL -->
   <div class="col-lg-6">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white border-0">
-        <h6 class="fw-semibold mb-0"><i class="bi bi-play-circle me-2 text-primary"></i>Ejecutar ETL</h6>
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header">
+        <h6 class="card-title">
+          <i class="bi bi-lightning-charge-fill me-2" style="color:var(--violet-500)"></i>Ejecutar ETL
+        </h6>
       </div>
       <div class="card-body">
-        <p class="text-muted small">Ejecuta el proceso Extract → Transform → Load sobre el dataset clínico cargado.</p>
+        <p class="text-muted small mb-3">
+          Ejecuta el pipeline <strong>Extract → Transform → Load</strong> sobre el dataset clínico activo.
+        </p>
         <button class="btn btn-primary w-100 mb-3" id="btn-run-etl" onclick="ejecutarETL()">
-          <i class="bi bi-lightning-charge-fill me-2"></i>Ejecutar ETL Ahora
+          <i class="bi bi-play-fill me-2"></i>Ejecutar ETL Ahora
         </button>
         <div id="etl-progress" class="d-none">
           <div class="progress mb-2">
             <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
                  style="width:100%" role="progressbar"></div>
           </div>
-          <small class="text-muted">Procesando datos clínicos...</small>
+          <small style="color:var(--text-secondary)">Procesando datos clínicos...</small>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Subida de dataset -->
+  <!-- Subir Dataset -->
   <div class="col-lg-6">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white border-0">
-        <h6 class="fw-semibold mb-0"><i class="bi bi-cloud-upload me-2 text-success"></i>Subir Dataset</h6>
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header">
+        <h6 class="card-title">
+          <i class="bi bi-cloud-upload me-2" style="color:var(--teal-500)"></i>Subir Dataset
+        </h6>
       </div>
       <div class="card-body">
-        <p class="text-muted small">Carga un archivo CSV o Excel. El ETL se ejecutará automáticamente.</p>
+        <p class="text-muted small mb-3">
+          Carga un archivo CSV o Excel. El ETL se ejecutará automáticamente al subir.
+        </p>
         <div class="mb-3">
           <input type="file" class="form-control" id="archivo-dataset" accept=".csv,.xlsx,.xls">
         </div>
@@ -48,26 +57,24 @@
   </div>
 </div>
 
-<!-- Resultado del ETL -->
+<!-- Resultado ETL -->
 <div class="card border-0 shadow-sm mb-4 d-none" id="etl-resultado">
-  <div class="card-header bg-white border-0">
-    <h6 class="fw-semibold mb-0">Resultado del Proceso</h6>
+  <div class="card-header">
+    <h6 class="card-title"><i class="bi bi-clipboard-data me-2 text-violet"></i>Resultado del Proceso</h6>
   </div>
   <div class="card-body">
     <div class="row g-3" id="etl-metricas"></div>
-    <hr>
-    <div class="mt-2">
-      <h6 class="small fw-semibold text-muted">LOG DETALLADO</h6>
-      <pre id="etl-log" class="bg-dark text-success p-3 rounded small"
-           style="max-height:250px;overflow-y:auto;font-size:12px"></pre>
-    </div>
+    <hr style="border-color:var(--border);margin:1.1rem 0">
+    <div class="section-label">Log detallado</div>
+    <pre id="etl-log" class="p-3 rounded code-log"
+         style="max-height:250px;overflow-y:auto;font-size:12px;line-height:1.7;margin:0"></pre>
   </div>
 </div>
 
 <!-- Historial ETL -->
 <div class="card border-0 shadow-sm">
-  <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
-    <h6 class="fw-semibold mb-0"><i class="bi bi-clock-history me-2"></i>Historial de Ejecuciones</h6>
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <h6 class="card-title"><i class="bi bi-clock-history me-2" style="color:var(--violet-400)"></i>Historial de Ejecuciones</h6>
     <button class="btn btn-sm btn-outline-secondary" onclick="cargarHistorial()">
       <i class="bi bi-arrow-clockwise me-1"></i>Actualizar
     </button>
@@ -75,19 +82,29 @@
   <div class="card-body p-0">
     <div class="table-responsive">
       <table class="table table-hover align-middle mb-0">
-        <thead class="table-light">
+        <thead>
           <tr>
-            <th>Fecha</th><th>Usuario</th><th>Entrada</th>
-            <th>Limpios</th><th>Duplicados</th><th>Tiempo</th><th>Estado</th>
+            <th>Fecha</th>
+            <th>Usuario</th>
+            <th>Entrada</th>
+            <th>Limpios</th>
+            <th>Duplicados</th>
+            <th>Tiempo</th>
+            <th>Estado</th>
           </tr>
         </thead>
         <tbody id="historial-tbody">
-          <tr><td colspan="7" class="text-center text-muted py-4">Cargando historial...</td></tr>
+          <tr>
+            <td colspan="7" class="text-center py-4" style="color:var(--text-secondary)">
+              Cargando historial...
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
   </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}

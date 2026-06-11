@@ -2,100 +2,87 @@
 {% load static %}
 
 {% block title %}Dashboard — SADA IPS{% endblock %}
-{% block nav_dashboard %}active text-white{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
 {% block page_title %}Dashboard Clínico{% endblock %}
 
 {% block content %}
-<!-- KPI Cards -->
-<div class="row g-3 mb-4" id="kpi-cards">
+
+<!-- KPI Cards principales -->
+<div class="row g-3 mb-4">
   <div class="col-sm-6 col-xl-3">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-body d-flex align-items-center gap-3">
-        <div class="rounded-3 p-3 bg-primary bg-opacity-10">
-          <i class="bi bi-people-fill text-primary fs-3"></i>
-        </div>
-        <div>
-          <div class="text-muted small">Total Pacientes</div>
-          <div class="fw-bold fs-4" id="kpi-total">—</div>
-        </div>
+    <div class="kpi-card kpi-violet d-flex align-items-center gap-3">
+      <div class="kpi-icon-wrap">
+        <i class="bi bi-people-fill"></i>
+      </div>
+      <div>
+        <div class="kpi-label">Total Pacientes</div>
+        <div class="kpi-value" id="kpi-total">—</div>
       </div>
     </div>
   </div>
   <div class="col-sm-6 col-xl-3">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-body d-flex align-items-center gap-3">
-        <div class="rounded-3 p-3 bg-danger bg-opacity-10">
-          <i class="bi bi-exclamation-triangle-fill text-danger fs-3"></i>
-        </div>
-        <div>
-          <div class="text-muted small">Pacientes Críticos</div>
-          <div class="fw-bold fs-4 text-danger" id="kpi-criticos">—</div>
-        </div>
+    <div class="kpi-card kpi-rose d-flex align-items-center gap-3">
+      <div class="kpi-icon-wrap">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+      </div>
+      <div>
+        <div class="kpi-label">Pacientes Críticos</div>
+        <div class="kpi-value" id="kpi-criticos">—</div>
       </div>
     </div>
   </div>
   <div class="col-sm-6 col-xl-3">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-body d-flex align-items-center gap-3">
-        <div class="rounded-3 p-3 bg-warning bg-opacity-10">
-          <i class="bi bi-heart-pulse-fill text-warning fs-3"></i>
-        </div>
-        <div>
-          <div class="text-muted small">Hipertensos</div>
-          <div class="fw-bold fs-4 text-warning" id="kpi-hipertensos">—</div>
-        </div>
+    <div class="kpi-card kpi-amber d-flex align-items-center gap-3">
+      <div class="kpi-icon-wrap">
+        <i class="bi bi-heart-pulse-fill"></i>
+      </div>
+      <div>
+        <div class="kpi-label">Hipertensos</div>
+        <div class="kpi-value" id="kpi-hipertensos">—</div>
       </div>
     </div>
   </div>
   <div class="col-sm-6 col-xl-3">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-body d-flex align-items-center gap-3">
-        <div class="rounded-3 p-3 bg-success bg-opacity-10">
-          <i class="bi bi-droplet-fill text-success fs-3"></i>
-        </div>
-        <div>
-          <div class="text-muted small">Diabéticos</div>
-          <div class="fw-bold fs-4 text-success" id="kpi-diabeticos">—</div>
-        </div>
+    <div class="kpi-card kpi-teal d-flex align-items-center gap-3">
+      <div class="kpi-icon-wrap">
+        <i class="bi bi-droplet-fill"></i>
+      </div>
+      <div>
+        <div class="kpi-label">Diabéticos</div>
+        <div class="kpi-value" id="kpi-diabeticos">—</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Segunda fila KPIs -->
+<!-- KPIs secundarios -->
 <div class="row g-3 mb-4">
   <div class="col-sm-4">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body py-3">
-        <div class="d-flex justify-content-between align-items-center">
-          <span class="text-muted small">Fumadores</span>
-          <i class="bi bi-fire text-secondary"></i>
-        </div>
-        <div class="fw-semibold fs-5" id="kpi-fumadores">—</div>
-        <div class="text-muted" style="font-size:11px" id="pct-fumadores"></div>
+    <div class="kpi-mini">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <span class="kpi-mini-label">Fumadores</span>
+        <i class="bi bi-fire" style="color:var(--violet-400);font-size:1rem"></i>
       </div>
+      <div class="kpi-mini-value" id="kpi-fumadores">—</div>
+      <div style="font-size:11px;color:var(--text-secondary);margin-top:2px" id="pct-fumadores"></div>
     </div>
   </div>
   <div class="col-sm-4">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body py-3">
-        <div class="d-flex justify-content-between align-items-center">
-          <span class="text-muted small">Promedio IMC</span>
-          <i class="bi bi-bar-chart-fill text-info"></i>
-        </div>
-        <div class="fw-semibold fs-5" id="kpi-imc">—</div>
+    <div class="kpi-mini">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <span class="kpi-mini-label">Promedio IMC</span>
+        <i class="bi bi-bar-chart-fill" style="color:var(--sky-500);font-size:1rem"></i>
       </div>
+      <div class="kpi-mini-value" id="kpi-imc">—</div>
     </div>
   </div>
   <div class="col-sm-4">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body py-3">
-        <div class="d-flex justify-content-between align-items-center">
-          <span class="text-muted small">Promedio Glucosa</span>
-          <i class="bi bi-activity text-pink"></i>
-        </div>
-        <div class="fw-semibold fs-5" id="kpi-glucosa">—</div>
+    <div class="kpi-mini">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <span class="kpi-mini-label">Promedio Glucosa</span>
+        <i class="bi bi-activity" style="color:var(--rose-400);font-size:1rem"></i>
       </div>
+      <div class="kpi-mini-value" id="kpi-glucosa">—</div>
     </div>
   </div>
 </div>
@@ -104,21 +91,21 @@
 <div class="row g-3 mb-4">
   <div class="col-lg-5">
     <div class="card border-0 shadow-sm h-100">
-      <div class="card-header bg-white border-0 pb-0">
-        <h6 class="fw-semibold mb-0">Distribución por Riesgo</h6>
+      <div class="card-header">
+        <h6 class="card-title">Distribución por Riesgo</h6>
       </div>
-      <div class="card-body d-flex align-items-center justify-content-center">
-        <canvas id="chart-riesgo" style="max-height:260px"></canvas>
+      <div class="card-body d-flex align-items-center justify-content-center p-3">
+        <canvas id="chart-riesgo" style="max-height:240px"></canvas>
       </div>
     </div>
   </div>
   <div class="col-lg-7">
     <div class="card border-0 shadow-sm h-100">
-      <div class="card-header bg-white border-0 pb-0">
-        <h6 class="fw-semibold mb-0">Pacientes por Rango de Edad</h6>
+      <div class="card-header">
+        <h6 class="card-title">Pacientes por Rango de Edad</h6>
       </div>
-      <div class="card-body">
-        <canvas id="chart-edad" style="max-height:260px"></canvas>
+      <div class="card-body p-3">
+        <canvas id="chart-edad" style="max-height:240px"></canvas>
       </div>
     </div>
   </div>
@@ -127,21 +114,21 @@
 <div class="row g-3 mb-4">
   <div class="col-lg-6">
     <div class="card border-0 shadow-sm h-100">
-      <div class="card-header bg-white border-0 pb-0">
-        <h6 class="fw-semibold mb-0">Clasificación IMC</h6>
+      <div class="card-header">
+        <h6 class="card-title">Clasificación IMC</h6>
       </div>
-      <div class="card-body">
-        <canvas id="chart-imc" style="max-height:240px"></canvas>
+      <div class="card-body p-3">
+        <canvas id="chart-imc" style="max-height:220px"></canvas>
       </div>
     </div>
   </div>
   <div class="col-lg-6">
     <div class="card border-0 shadow-sm h-100">
-      <div class="card-header bg-white border-0 pb-0">
-        <h6 class="fw-semibold mb-0">Top 10 Diagnósticos</h6>
+      <div class="card-header">
+        <h6 class="card-title">Top 10 Diagnósticos</h6>
       </div>
-      <div class="card-body">
-        <canvas id="chart-diagnosticos" style="max-height:240px"></canvas>
+      <div class="card-body p-3">
+        <canvas id="chart-diagnosticos" style="max-height:220px"></canvas>
       </div>
     </div>
   </div>
@@ -151,8 +138,8 @@
 <div class="row g-3">
   <div class="col-lg-6">
     <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
-        <h6 class="fw-semibold mb-0">Último Proceso ETL</h6>
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h6 class="card-title"><i class="bi bi-arrow-left-right me-2 text-violet"></i>Último Proceso ETL</h6>
         <a href="/etl/" class="btn btn-sm btn-outline-primary">Gestionar</a>
       </div>
       <div class="card-body" id="etl-status">
@@ -162,8 +149,8 @@
   </div>
   <div class="col-lg-6">
     <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
-        <h6 class="fw-semibold mb-0">Modelo ML Activo</h6>
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h6 class="card-title"><i class="bi bi-cpu me-2 text-violet"></i>Modelo ML Activo</h6>
         <a href="/ml/" class="btn btn-sm btn-outline-success">Ver modelos</a>
       </div>
       <div class="card-body" id="ml-status">
@@ -172,6 +159,7 @@
     </div>
   </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}

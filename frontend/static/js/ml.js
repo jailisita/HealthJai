@@ -162,8 +162,8 @@ function mostrarMetricas(metricas, modelo, matrix) {
         datasets: [{
           label: 'Valor (%)',
           data: [acc, prec, rec, f1],
-          backgroundColor: ['#8fa0e4b3', '#8cd1a2b3', '#f7d683b3', '#a2daf3b3'],
-          borderColor: ['#8fa0e4', '#8cd1a2', '#f7d683', '#a2daf3'],
+          backgroundColor: ['rgba(124,58,237,0.2)', 'rgba(20,184,166,0.2)', 'rgba(251,191,36,0.2)', 'rgba(244,63,94,0.2)'],
+          borderColor: ['#7c3aed', '#14b8a6', '#fbbf24', '#f43f5e'],
           borderWidth: 2,
           borderRadius: 6
         }]
@@ -249,39 +249,63 @@ async function predecirPaciente() {
     const data = await res.json().catch(() => ({}));
 
     if (res.ok) {
-      const colores = { bajo: 'success', medio: 'warning', alto: 'orange', critico: 'danger' };
-      const color = colores[data.riesgo_predicho] || 'secondary';
+      const BADGE = { bajo: 'risk-bajo', medio: 'risk-medio', alto: 'risk-alto', critico: 'risk-critico' };
+      const BS    = { bajo: 'success', medio: 'warning', alto: 'warning', critico: 'danger' };
+      const riesgoPredicho = data.riesgo_predicho || '—';
+      const riesgoActual   = data.riesgo_actual   || '—';
+      const nombre         = data.nombre          || `Paciente #${data.paciente_id}`;
       const pct = (data.probabilidad * 100).toFixed(1);
+      const bsColor = BS[riesgoPredicho] || 'secondary';
 
       const distHtml = Object.entries(data.distribucion_clases || {})
+        .sort(([,a],[,b]) => b - a)
         .map(([k, v]) => `
-          <div class="d-flex justify-content-between small">
-            <span>${k}</span>
-            <span class="fw-semibold">${(v * 100).toFixed(1)}%</span>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="risk-badge ${BADGE[k] || ''}" style="font-size:10px">${k}</span>
+            <span class="fw-semibold" style="font-size:12px;min-width:40px;text-align:right">${(v*100).toFixed(1)}%</span>
           </div>
-          <div class="progress mb-1" style="height:5px">
-            <div class="progress-bar bg-${colores[k] || 'secondary'}" style="width:${(v * 100).toFixed(1)}%"></div>
-          </div>
-        `)
+          <div class="progress mb-2" style="height:5px;border-radius:999px">
+            <div class="progress-bar bg-${BS[k] || 'secondary'}" style="width:${(v*100).toFixed(1)}%;border-radius:999px"></div>
+          </div>`)
         .join('');
 
       div.innerHTML = `
-        <div class="alert alert-${color === 'orange' ? 'warning' : color} border-0 mt-2">
-          <div class="d-flex align-items-center gap-3">
-            <div class="fs-2">🏥</div>
-            <div class="flex-grow-1">
-              <div class="fw-bold">Riesgo Predicho:
-                <span class="text-${color === 'orange' ? 'warning' : color} text-uppercase">${data.riesgo_predicho}</span>
+        <div class="card border-0 mt-3" style="border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(76,29,149,0.1)">
+          <div style="background:linear-gradient(135deg,var(--violet-900),var(--violet-700));padding:1rem 1.25rem">
+            <div class="d-flex align-items-center gap-3">
+              <div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <i class="bi bi-person-fill text-white" style="font-size:1.3rem"></i>
               </div>
-              <div class="small">Probabilidad: ${pct}%</div>
-              <div class="progress mt-1" style="height:8px">
-                <div class="progress-bar bg-${color === 'orange' ? 'warning' : color}" style="width:${pct}%"></div>
+              <div>
+                <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:#fff;font-size:1rem">${nombre}</div>
+                <div style="font-size:11px;color:var(--violet-300)">ID #${data.paciente_id}</div>
               </div>
             </div>
           </div>
-          <hr class="my-2">
-          <div class="small fw-semibold mb-1">Distribución por clases:</div>
-          ${distHtml}
+          <div class="card-body p-3">
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <div style="background:var(--gray-50);border-radius:10px;padding:0.75rem">
+                  <div style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:4px">Riesgo en registro</div>
+                  <span class="risk-badge ${BADGE[riesgoActual] || 'bg-secondary'}">${riesgoActual.toUpperCase()}</span>
+                </div>
+              </div>
+              <div class="col-6">
+                <div style="background:var(--gray-50);border-radius:10px;padding:0.75rem">
+                  <div style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:4px">Riesgo predicho por ML</div>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="risk-badge ${BADGE[riesgoPredicho] || 'bg-secondary'}">${riesgoPredicho.toUpperCase()}</span>
+                    <span style="font-size:11px;color:var(--text-secondary)">${pct}%</span>
+                  </div>
+                  <div class="progress mt-2" style="height:5px;border-radius:999px">
+                    <div class="progress-bar bg-${bsColor}" style="width:${pct}%;border-radius:999px"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:8px">Distribución de probabilidades</div>
+            ${distHtml}
+          </div>
         </div>`;
     } else {
       div.innerHTML = `<div class="alert alert-danger">${data.error || 'No se pudo predecir'}</div>`;
