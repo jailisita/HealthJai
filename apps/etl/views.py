@@ -142,6 +142,7 @@ def ejecutar_etl_view(request):
 
 def _procesar_upload_async(destino, user_id):
     import django
+    from django import db
     django.setup()
     from django.contrib.auth import get_user_model
     try:
@@ -149,6 +150,8 @@ def _procesar_upload_async(destino, user_id):
         ejecutar_etl(destino, usuario=user)
     except Exception:
         pass
+    finally:
+        db.connections.close_all()
 
 @extend_schema(
     tags=['etl'],
