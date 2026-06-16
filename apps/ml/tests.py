@@ -90,6 +90,7 @@ class ModeloMLTestCase(TestCase):
         self.assertLessEqual(resultado['probabilidad'], 1)
 
     def test_prediccion_guarda_en_bd(self):
+        entrenar_modelo('random_forest')
         antes = PrediccionPaciente.objects.count()
         predecir_paciente(1)
         self.assertGreater(PrediccionPaciente.objects.count(), antes)

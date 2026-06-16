@@ -57,12 +57,6 @@
       <span class="badge bg-primary ms-2" id="badge-total">0</span>
     </h6>
     <div class="d-flex gap-2">
-      <button onclick="descargarConFiltros('/api/reportes/csv/', 'pacientes.csv')" class="btn btn-sm btn-outline-secondary">
-        <i class="bi bi-filetype-csv me-1"></i>CSV
-      </button>
-      <button onclick="descargarConFiltros('/api/reportes/excel/', 'reporte_pacientes.xlsx')" class="btn btn-sm btn-outline-success">
-        <i class="bi bi-file-earmark-excel me-1"></i>Excel
-      </button>
       <button onclick="descargarConFiltros('/api/reportes/pdf/', 'reporte_analitica_clinica.pdf')" class="btn btn-sm btn-outline-danger">
         <i class="bi bi-file-earmark-pdf me-1"></i>PDF
       </button>
@@ -83,11 +77,12 @@
             <th>Diagnóstico</th>
             <th>Riesgo</th>
             <th>Crítico</th>
+            <th style="width:100px">Acciones</th>
           </tr>
         </thead>
         <tbody id="pacientes-tbody">
           <tr>
-            <td colspan="10" class="text-center py-5" style="color:var(--text-secondary)">
+            <td colspan="11" class="text-center py-5" style="color:var(--text-secondary)">
               <div class="spinner-border spinner-border-sm me-2" style="color:var(--violet-400)"></div>
               Cargando pacientes...
             </td>
@@ -100,6 +95,113 @@
     <div class="d-flex align-items-center justify-content-between">
       <small style="color:var(--text-secondary)" id="pagination-info"></small>
       <div class="d-flex gap-1" id="pagination-controls"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Paciente -->
+<div class="modal fade" id="modal-editar-paciente" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="border-radius:14px;border:1px solid var(--border);overflow:hidden">
+      <div class="modal-header" style="background:linear-gradient(135deg,var(--violet-900),var(--violet-700));border:none;padding:1rem 1.25rem">
+        <h6 class="modal-title text-white"><i class="bi bi-pencil me-2"></i>Editar Paciente</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="form-editar-paciente" class="p-3">
+        <input type="hidden" id="edit-paciente-id">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">ID Paciente</label>
+            <input type="number" class="form-control" id="edit-id-paciente" readonly>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Nombres</label>
+            <input type="text" class="form-control" id="edit-nombres">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Apellidos</label>
+            <input type="text" class="form-control" id="edit-apellidos">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Edad</label>
+            <input type="number" step="any" class="form-control" id="edit-edad">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Sexo</label>
+            <select class="form-select" id="edit-sexo">
+              <option value="M">Masculino</option>
+              <option value="F">Femenino</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Peso (kg)</label>
+            <input type="number" step="any" class="form-control" id="edit-peso">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Altura (m)</label>
+            <input type="number" step="any" class="form-control" id="edit-altura">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Glucosa</label>
+            <input type="number" step="any" class="form-control" id="edit-glucosa">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Colesterol</label>
+            <input type="number" step="any" class="form-control" id="edit-colesterol">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">P. Sistólica</label>
+            <input type="number" step="any" class="form-control" id="edit-sistolica">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">P. Diastólica</label>
+            <input type="number" step="any" class="form-control" id="edit-diastolica">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Frec. Cardíaca</label>
+            <input type="number" step="any" class="form-control" id="edit-frecuencia">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Saturación O2</label>
+            <input type="number" step="any" class="form-control" id="edit-saturacion">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Temperatura</label>
+            <input type="number" step="any" class="form-control" id="edit-temperatura">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Diagnóstico</label>
+            <input type="text" class="form-control" id="edit-diagnostico">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Riesgo</label>
+            <select class="form-select" id="edit-riesgo">
+              <option value="bajo">Bajo</option>
+              <option value="medio">Medio</option>
+              <option value="alto">Alto</option>
+              <option value="critico">Crítico</option>
+            </select>
+          </div>
+        </div>
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <span id="msg-edit-paciente" style="font-size:13px;align-self:center"></span>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Predicción -->
+<div class="modal fade" id="modal-prediccion-paciente" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content" style="border-radius:14px;border:1px solid var(--border);overflow:hidden">
+      <div class="modal-header" style="background:linear-gradient(135deg,var(--violet-900),var(--violet-700));border:none;padding:.75rem 1.25rem">
+        <h6 class="modal-title text-white"><i class="bi bi-cpu me-2"></i>Predicción de Riesgo</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0" id="prediccion-paciente-resultado"></div>
     </div>
   </div>
 </div>

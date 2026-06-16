@@ -5,21 +5,28 @@ from rest_framework.decorators import api_view, permission_classes, parser_class
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from apps.authentication.permissions import EsMedico, EsAdministrador, EsAnalista
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
 from .models import Paciente, HistorialETL
 from .serializers import PacienteSerializer, HistorialETLSerializer
 from .etl_engine import ejecutar_etl
+from django.db.models import Q
 
 
-class PacienteViewSet(viewsets.ReadOnlyModelViewSet):
+
+
+class PacienteViewSet(viewsets.ModelViewSet):
     """
-    Lista y detalle de pacientes procesados por el ETL.
-    Soporta filtrado por riesgo, sexo y estado crítico.
+    CRUD de pacientes. Lectura: admin/médico. Escritura: solo admin.
     """
     queryset = Paciente.objects.all()
     serializer_class = PacienteSerializer
-    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ('create', 'update', 'partial_update', 'destroy'):
+            return [IsAuthenticated(), EsAdministrador()]
+        return [IsAuthenticated(), EsMedico()]
 
     @extend_schema(
         tags=['pacientes'],
@@ -41,10 +48,71 @@ class PacienteViewSet(viewsets.ReadOnlyModelViewSet):
         riesgo  = self.request.query_params.get('riesgo')
         critico = self.request.query_params.get('critico')
         sexo    = self.request.query_params.get('sexo')
-        if riesgo:           qs = qs.filter(riesgo_enfermedad=riesgo)
-        if critico == 'true': qs = qs.filter(es_critico=True)
-        if sexo:             qs = qs.filter(sexo=sexo)
+        busqueda = self.request.query_params.get('busqueda')
+
+        if riesgo:
+            qs = qs.filter(riesgo_enfermedad=riesgo)
+        if critico == 'true':
+            qs = qs.filter(es_critico=True)
+        if sexo:
+            qs = qs.filter(sexo=sexo)
+
+        # Búsqueda global (en todos los registros)
+        # - Texto: nombres/apellidos/diagnóstico (contains case-insensitive)
+        # - ID: si la búsqueda es numérica
+        if busqueda:
+            b = busqueda.strip()
+            if b:
+                filtro = (
+                    Q(nombres__icontains=b) |
+                    Q(apellidos__icontains=b) |
+                    Q(diagnostico_preliminar__icontains=b)
+                )
+
+                if b.isdigit():
+                    filtro |= Q(id_paciente__exact=int(b))
+
+                qs = qs.filter(filtro)
+
         return qs
+
+    def perform_update(self, serializer):
+        data = self.request.data
+        if 'peso' in data or 'altura' in data:
+            peso = data.get('peso', getattr(serializer.instance, 'peso', None))
+            altura = data.get('altura', getattr(serializer.instance, 'altura', None))
+            if peso and altura:
+                try:
+                    imc = float(peso) / (float(altura) ** 2)
+                    serializer.validated_data['imc'] = round(imc, 1)
+                    if imc < 18.5:
+                        serializer.validated_data['clasificacion_imc'] = 'bajo_peso'
+                    elif imc < 25:
+                        serializer.validated_data['clasificacion_imc'] = 'normal'
+                    elif imc < 30:
+                        serializer.validated_data['clasificacion_imc'] = 'sobrepeso'
+                    else:
+                        serializer.validated_data['clasificacion_imc'] = 'obesidad'
+                except (ValueError, TypeError):
+                    pass
+        campos_critico = ['presion_sistolica', 'glucosa', 'saturacion_oxigeno', 'riesgo_enfermedad']
+        if any(c in data for c in campos_critico):
+            instance = serializer.instance
+            ps = data.get('presion_sistolica', instance.presion_sistolica)
+            gluc = data.get('glucosa', instance.glucosa)
+            sat = data.get('saturacion_oxigeno', instance.saturacion_oxigeno)
+            riesgo = data.get('riesgo_enfermedad', instance.riesgo_enfermedad)
+            critico = False
+            if ps and float(ps) > 180:
+                critico = True
+            if gluc and float(gluc) > 300:
+                critico = True
+            if sat and float(sat) < 85:
+                critico = True
+            if riesgo and riesgo == 'critico':
+                critico = True
+            serializer.validated_data['es_critico'] = critico
+        serializer.save()
 
 
 @extend_schema(
@@ -54,7 +122,7 @@ class PacienteViewSet(viewsets.ReadOnlyModelViewSet):
     responses={200: HistorialETLSerializer},
 )
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, EsAnalista])
 def ejecutar_etl_view(request):
     filepath = str(settings.BASE_DIR / 'datasets' / 'dataset_clinico.xlsx')
     if not os.path.exists(filepath):
@@ -78,73 +146,48 @@ def ejecutar_etl_view(request):
     responses={200: HistorialETLSerializer},
 )
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, EsAnalista])
 @parser_classes([MultiPartParser])
 def subir_dataset(request):
     try:
         archivo = request.FILES.get('archivo')
         if not archivo:
-            return Response(
-                {'error': 'No se envió archivo', 'detalle': 'Campo multipart requerido: archivo'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({'error': 'No se envió archivo'}, status=status.HTTP_400_BAD_REQUEST)
 
-        os.makedirs(settings.DATASETS_DIR, exist_ok=True)
-
+        os.makedirs(settings.MEDIA_ROOT / 'etl_uploads', exist_ok=True)
         ext = os.path.splitext(archivo.name)[1].lower()
         if ext not in ['.csv', '.xlsx', '.xls']:
             return Response(
-                {
-                    'error': 'Formato no soportado',
-                    'detalle': 'Use CSV o Excel (.csv, .xlsx, .xls)',
-                },
-                status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                {'error': 'Formato no soportado. Use CSV o Excel (.csv, .xlsx, .xls)'},
+                status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
             )
 
-        destino = os.path.join(settings.DATASETS_DIR, f'dataset_clinico{ext}')
-        try:
-            with open(destino, 'wb') as f:
-                for chunk in archivo.chunks():
-                    f.write(chunk)
-        except OSError as e:
-            return Response(
-                {
-                    'error': 'No fue posible guardar el archivo en el servidor',
-                    'detalle': str(e),
-                    'tipo': e.__class__.__name__,
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+        destino = settings.MEDIA_ROOT / 'etl_uploads' / f'uploaded{ext}'
+        with open(destino, 'wb') as f:
+            for chunk in archivo.chunks():
+                f.write(chunk)
 
         historial = ejecutar_etl(destino, usuario=request.user)
         data = HistorialETLSerializer(historial).data
 
         if historial.estado == 'error':
-            # Devolver formato consistente para que el frontend muestre el detalle/logs.
-            return Response(
-                {
-                    'error': 'ETL falló',
-                    'detalle': getattr(historial, 'errores', None) or 'El motor ETL reportó un error',
-                    'logs': getattr(historial, 'log_detalle', None),
-                    'estado': historial.estado,
-                    'registros_entrada': getattr(historial, 'registros_entrada', None),
-                    'registros_limpios': getattr(historial, 'registros_limpios', None),
-                },
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            )
+            # En caso de error de ETL, devolver 400/422 para que el frontend sepa que falló.
+            return Response(data, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         return Response(data, status=status.HTTP_200_OK)
 
     except Exception as e:
+        # Intentar devolver detalle estructurado al frontend
+        detalle = str(e)
+        error_tipo = e.__class__.__name__
         return Response(
             {
                 'error': 'Fallo al subir o procesar el archivo',
-                'detalle': str(e),
-                'tipo': e.__class__.__name__,
+                'detalle': detalle,
+                'tipo': error_tipo,
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
-
 
 
 
@@ -154,7 +197,7 @@ def subir_dataset(request):
     responses={200: HistorialETLSerializer(many=True)},
 )
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, EsAnalista])
 def historial_etl(request):
     registros = HistorialETL.objects.all()[:20]
     return Response(HistorialETLSerializer(registros, many=True).data)

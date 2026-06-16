@@ -1,5 +1,5 @@
 -- ============================================================
--- HealthAnalytics IPS — Schema SQL
+-- SADA IPS — Schema SQL
 -- Compatible con PostgreSQL 14+ y MySQL 8+
 -- Generado para referencia y despliegue manual
 -- ============================================================
@@ -219,5 +219,5 @@ INSERT INTO authentication_usuario
     (password, is_superuser, username, email, is_staff, is_active, rol)
 VALUES
     ('pbkdf2_sha256$600000$placeholder$hash=', TRUE,
-     'admin', 'admin@healthanalytics.co', TRUE, TRUE, 'administrador')
+     'admin', 'admin@sadaips.co', TRUE, TRUE, 'administrador')
 ON CONFLICT (username) DO NOTHING;

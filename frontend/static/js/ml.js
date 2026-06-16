@@ -236,7 +236,7 @@ async function predecirPaciente() {
     return;
   }
 
-  div.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>Prediciendo...';
+  div.innerHTML = '<div class="alert alert-info"><div class="spinner-border spinner-border-sm me-2"></div>Prediciendo riesgo...</div>';
 
   try {
     const res = await authFetch('/api/ml/predecir/', {
@@ -252,10 +252,24 @@ async function predecirPaciente() {
       const BADGE = { bajo: 'risk-bajo', medio: 'risk-medio', alto: 'risk-alto', critico: 'risk-critico' };
       const BS    = { bajo: 'success', medio: 'warning', alto: 'warning', critico: 'danger' };
       const riesgoPredicho = data.riesgo_predicho || '—';
-      const riesgoActual   = data.riesgo_actual   || '—';
-      const nombre         = data.nombre          || `Paciente #${data.paciente_id}`;
       const pct = (data.probabilidad * 100).toFixed(1);
       const bsColor = BS[riesgoPredicho] || 'secondary';
+      const nombre = data.paciente_nombre || `Paciente #${data.paciente_id || id}`;
+
+      const keyFactors = (data.factores_clave || []).map(f => `
+        <div class="d-flex justify-content-between align-items-center py-1" style="border-bottom:1px solid var(--border)">
+          <div>
+            <div class="fw-semibold" style="font-size:.8rem">${f.factor}</div>
+            <div style="font-size:.72rem;color:var(--text-secondary)">${f.descripcion || ''}</div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="fw-bold" style="font-size:.85rem">${f.valor ?? ''} ${f.unidad || ''}</span>
+            <span class="risk-badge risk-${f.impacto}" style="font-size:9px;text-transform:uppercase">${f.impacto}</span>
+          </div>
+        </div>`).join('');
+
+      const recommendations = (data.recomendaciones || []).map(r => `
+        <li style="font-size:.78rem;color:var(--text-secondary);margin-bottom:4px">${r}</li>`).join('');
 
       const distHtml = Object.entries(data.distribucion_clases || {})
         .sort(([,a],[,b]) => b - a)
@@ -283,32 +297,41 @@ async function predecirPaciente() {
             </div>
           </div>
           <div class="card-body p-3">
-            <div class="row g-2 mb-3">
-              <div class="col-6">
-                <div style="background:var(--gray-50);border-radius:10px;padding:0.75rem">
-                  <div style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:4px">Riesgo en registro</div>
-                  <span class="risk-badge ${BADGE[riesgoActual] || 'bg-secondary'}">${riesgoActual.toUpperCase()}</span>
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <div style="background:var(--gray-50);border-radius:10px;padding:.6rem .9rem;flex:1">
+                <div style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:4px">Riesgo predicho</div>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="risk-badge ${BADGE[riesgoPredicho] || 'bg-secondary'}" style="font-size:.8rem">${riesgoPredicho.toUpperCase()}</span>
+                  <span style="font-size:12px;color:var(--text-secondary)">${pct}%</span>
                 </div>
-              </div>
-              <div class="col-6">
-                <div style="background:var(--gray-50);border-radius:10px;padding:0.75rem">
-                  <div style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:4px">Riesgo predicho por ML</div>
-                  <div class="d-flex align-items-center gap-2">
-                    <span class="risk-badge ${BADGE[riesgoPredicho] || 'bg-secondary'}">${riesgoPredicho.toUpperCase()}</span>
-                    <span style="font-size:11px;color:var(--text-secondary)">${pct}%</span>
-                  </div>
-                  <div class="progress mt-2" style="height:5px;border-radius:999px">
-                    <div class="progress-bar bg-${bsColor}" style="width:${pct}%;border-radius:999px"></div>
-                  </div>
+                <div class="progress mt-2" style="height:5px;border-radius:999px">
+                  <div class="progress-bar bg-${bsColor}" style="width:${pct}%;border-radius:999px"></div>
                 </div>
               </div>
             </div>
-            <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:8px">Distribución de probabilidades</div>
-            ${distHtml}
+
+            ${data.nivel_detalle ? `<div class="alert alert-info py-2 px-3 mb-3" style="font-size:.8rem;border-radius:8px">${data.nivel_detalle}</div>` : ''}
+
+            <div class="mb-3">
+              <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:6px">Distribución de clases</div>
+              ${distHtml}
+            </div>
+
+            ${keyFactors ? `
+            <div class="mb-3">
+              <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:6px">Factores clave</div>
+              ${keyFactors}
+            </div>` : ''}
+
+            ${recommendations ? `
+            <div>
+              <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:6px">Recomendaciones</div>
+              <ul style="padding-left:1.2rem;margin:0">${recommendations}</ul>
+            </div>` : ''}
           </div>
         </div>`;
     } else {
-      div.innerHTML = `<div class="alert alert-danger">${data.error || 'No se pudo predecir'}</div>`;
+      div.innerHTML = `<div class="alert alert-danger">${data.error || 'No se pudo predecir el riesgo'}</div>`;
     }
   } catch (e) {
     div.innerHTML = `<div class="alert alert-danger">Error: ${(e?.message || String(e))}</div>`;

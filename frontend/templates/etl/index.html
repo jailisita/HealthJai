@@ -67,7 +67,7 @@
     <hr style="border-color:var(--border);margin:1.1rem 0">
     <div class="section-label">Log detallado</div>
     <pre id="etl-log" class="p-3 rounded code-log"
-         style="max-height:250px;overflow-y:auto;font-size:12px;line-height:1.7;margin:0"></pre>
+         style="max-height:250px;overflow:auto;font-size:12px;line-height:1.7;margin:0;white-space:pre-wrap;word-break:break-word"></pre>
   </div>
 </div>
 
@@ -81,16 +81,16 @@
   </div>
   <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
+      <table class="table table-hover align-middle mb-0" style="table-layout:fixed">
         <thead>
           <tr>
-            <th>Fecha</th>
-            <th>Usuario</th>
-            <th>Entrada</th>
-            <th>Limpios</th>
-            <th>Duplicados</th>
-            <th>Tiempo</th>
-            <th>Estado</th>
+            <th style="width:20%">Fecha</th>
+            <th style="width:18%">Usuario</th>
+            <th style="width:14%">Entrada</th>
+            <th style="width:14%">Limpios</th>
+            <th style="width:14%">Duplicados</th>
+            <th style="width:10%">Tiempo</th>
+            <th style="width:10%">Estado</th>
           </tr>
         </thead>
         <tbody id="historial-tbody">

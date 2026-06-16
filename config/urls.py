@@ -28,4 +28,5 @@ urlpatterns = [
 
     # ── Frontend ──────────────────────────────────────────────
     path('', include('apps.dashboard.frontend_urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) \
+  + static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])

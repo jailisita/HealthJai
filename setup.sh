@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# setup.sh — Configuración inicial del proyecto HealthAnalytics IPS
+# setup.sh — Configuración inicial del proyecto SADA IPS
 set -e
 
 echo "╔══════════════════════════════════════════════════════╗"
-echo "║      SADA IPS — Setup Inicial             ║"
+echo "║      SADA IPS — Setup Inicial                        ║"
 echo "╚══════════════════════════════════════════════════════╝"
 
 # 1. Entorno virtual
@@ -33,7 +33,7 @@ echo "▶ Creando superusuario administrador..."
 python manage.py shell -c "
 from apps.authentication.models import Usuario
 if not Usuario.objects.filter(username='admin').exists():
-    Usuario.objects.create_superuser('admin', 'admin@healthanalytics.co', 'admin123', rol='administrador')
+    Usuario.objects.create_superuser('admin', 'admin@sadaips.co', 'admin123', rol='administrador')
     print('  → Superusuario creado: admin / admin123')
 else:
     print('  → Superusuario ya existe')

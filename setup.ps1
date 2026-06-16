@@ -3,7 +3,7 @@ param(
 )
 
 Write-Host "╔══════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║      SADA IPS — Setup Windows             ║" -ForegroundColor Cyan
+Write-Host "║      SADA IPS — Setup Windows                        ║" -ForegroundColor Cyan
 Write-Host "╚══════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 
 # 1. Check Python
@@ -47,7 +47,7 @@ Write-Host "  ✓ Migraciones ejecutadas" -ForegroundColor Green
 
 # 6. Superuser
 Write-Host "`n▶ Creando superusuario administrador..." -ForegroundColor Yellow
-& $pythonVenv manage.py shell -c "from apps.authentication.models import Usuario; import sys; sys.stdout.write('  → Superusuario ya existe\n') if Usuario.objects.filter(username='admin').exists() else [Usuario.objects.create_superuser('admin', 'admin@healthanalytics.co', 'admin123', rol='administrador'), sys.stdout.write('  → Superusuario creado: admin / admin123\n')]"
+& $pythonVenv manage.py shell -c "from apps.authentication.models import Usuario; import sys; sys.stdout.write('  → Superusuario ya existe\n') if Usuario.objects.filter(username='admin').exists() else [    Usuario.objects.create_superuser('admin', 'admin@sadaips.co', 'admin123', rol='administrador'), sys.stdout.write('  → Superusuario creado: admin / admin123\n')]"
 
 # 7. Load dataset
 if (-not $NoDataset) {

@@ -1,35 +1,42 @@
-/* auth.js — Tokens JWT + control de acceso por rol */
+/* auth.js — Tokens JWT, roles y protección de rutas — SADA IPS */
 
 const API = '/api';
 
-// Permisos por rol
-const ROL_PERMISOS = {
-  admin:    ['dashboard', 'pacientes', 'etl', 'ml', 'reportes'],
-  doctor:   ['dashboard', 'pacientes', 'reportes'],
-  analista: ['dashboard', 'etl', 'ml', 'reportes'],
-};
-
-// Rutas protegidas y qué permiso requieren
-const RUTA_PERMISO = {
-  '/':          'dashboard',
-  '/pacientes/':'pacientes',
-  '/etl/':      'etl',
-  '/ml/':       'ml',
-};
-
 function getToken()   { return localStorage.getItem('access'); }
 function getRefresh() { return localStorage.getItem('refresh'); }
-function getRol()     { return (localStorage.getItem('rol') || 'doctor').toLowerCase(); }
 
-function tieneAcceso(permiso) {
-  const permisos = ROL_PERMISOS[getRol()] || ROL_PERMISOS['doctor'];
-  return permisos.includes(permiso);
+function decodificarToken(token) {
+  try { return JSON.parse(atob(token.split('.')[1])); } catch { return {}; }
 }
 
+function getRol() {
+  const payload = decodificarToken(getToken());
+  return (payload.rol || localStorage.getItem('rol') || '').toLowerCase();
+}
+
+const ROLES = {
+  pages: {
+    '/':           ['administrador', 'medico', 'analista'],
+    '/pacientes/': ['administrador', 'medico'],
+    '/etl/':       ['administrador', 'analista'],
+    '/ml/':        ['administrador', 'analista'],
+    '/usuarios/':  ['administrador'],
+  },
+  nav: {
+    'nav-pacientes':      ['administrador', 'medico'],
+    'nav-etl':            ['administrador', 'analista'],
+    'nav-ml':             ['administrador', 'analista'],
+    'nav-usuarios':       ['administrador'],
+    'nav-reportes':       ['administrador', 'medico', 'analista'],
+    'nav-reportes-links': ['administrador', 'medico', 'analista'],
+  }
+};
+
 async function authFetch(url, options = {}) {
+  const isFormData = options.body instanceof FormData;
   options.headers = options.headers || {};
   options.headers['Authorization'] = `Bearer ${getToken()}`;
-  if (!(options.body instanceof FormData)) {
+  if (!isFormData) {
     options.headers['Content-Type'] = options.headers['Content-Type'] || 'application/json';
   }
   let res = await fetch(url, options);
@@ -42,11 +49,10 @@ async function authFetch(url, options = {}) {
     if (refreshRes.ok) {
       const data = await refreshRes.json();
       localStorage.setItem('access', data.access);
+      if (isFormData) { cerrarSesion(); return null; } // FormData no re-enviable
       options.headers['Authorization'] = `Bearer ${data.access}`;
       res = await fetch(url, options);
-    } else {
-      cerrarSesion(); return null;
-    }
+    } else { cerrarSesion(); return null; }
   }
   return res;
 }
@@ -56,65 +62,52 @@ function cerrarSesion() {
   window.location.href = '/login/';
 }
 
+function aplicarPermisos() {
+  const rol = getRol();
+  Object.entries(ROLES.nav).forEach(([id, roles]) => {
+    const el = document.getElementById(id);
+    if (el && !roles.includes(rol)) el.style.display = 'none';
+  });
+  const path    = window.location.pathname;
+  const allowed = Object.entries(ROLES.pages).find(([p]) => path === p);
+  if (allowed && !allowed[1].includes(rol)) window.location.href = '/';
+}
+
+function mostrarUsuario() {
+  const el = document.getElementById('usuario-nombre');
+  if (!el) return;
+  const payload  = decodificarToken(getToken());
+  const username = payload.username || localStorage.getItem('username') || '—';
+  const rol      = getRol();
+  el.textContent = username;
+
+  // Badge de rol
+  const elRol = document.getElementById('usuario-rol');
+  if (elRol) {
+    const labels = { administrador: 'Admin', medico: 'Médico', analista: 'Analista' };
+    elRol.textContent = labels[rol] || rol;
+    elRol.className   = `rol-badge rol-${rol}`;
+  }
+}
+
+(function protegerRuta() {
+  const rutasPublicas = ['/login/'];
+  if (!rutasPublicas.includes(window.location.pathname) && !getToken()) {
+    window.location.href = '/login/'; return;
+  }
+  aplicarPermisos();
+  mostrarUsuario();
+})();
+
 async function descargarArchivo(url, filename) {
   try {
     const res = await authFetch(url);
     if (!res || !res.ok) { alert('Error al descargar el archivo'); return; }
-    const blob = await res.blob();
+    const blob = window.URL.createObjectURL(await res.blob());
     const a = document.createElement('a');
-    a.href = window.URL.createObjectURL(blob);
-    a.download = filename;
+    a.href = blob; a.download = filename;
     document.body.appendChild(a); a.click();
     document.body.removeChild(a);
+    window.URL.revokeObjectURL(blob);
   } catch(e) { console.error('Error descargando:', e); }
 }
-
-// ── Protección de ruta + setup de sidebar ─────────────────────
-(function init() {
-  const rutasPublicas = ['/login/'];
-  const path = window.location.pathname;
-
-  if (rutasPublicas.includes(path)) return;
-
-  if (!getToken()) { window.location.href = '/login/'; return; }
-
-  // Redirigir si el rol no tiene acceso a esta ruta
-  const permiso = RUTA_PERMISO[path];
-  if (permiso && !tieneAcceso(permiso)) {
-    window.location.href = '/';
-    return;
-  }
-
-  // Mostrar nombre y rol en sidebar
-  const elNombre = document.getElementById('usuario-nombre');
-  if (elNombre) {
-    const username = localStorage.getItem('username') || '—';
-    elNombre.textContent = username;
-  }
-  const elRol = document.getElementById('usuario-rol');
-  if (elRol) {
-    const rol = getRol();
-    const ROL_LABEL = { admin:'Administrador', doctor:'Doctor', analista:'Analista' };
-    elRol.textContent = ROL_LABEL[rol] || rol;
-    elRol.className = `rol-badge rol-${rol}`;
-  }
-
-  // Ocultar elementos del sidebar según rol
-  document.addEventListener('DOMContentLoaded', () => {
-    // Ocultar nav-items sin acceso
-    document.querySelectorAll('.nav-item[data-permiso]').forEach(el => {
-      if (!tieneAcceso(el.getAttribute('data-permiso'))) el.style.display = 'none';
-    });
-    // Ocultar secciones de reportes si no tiene acceso
-    document.querySelectorAll('.sidebar-section[data-permiso]').forEach(el => {
-      if (!tieneAcceso(el.getAttribute('data-permiso'))) el.style.display = 'none';
-    });
-    // Ocultar secciones cuya lista queda vacía
-    document.querySelectorAll('.sidebar-section').forEach(section => {
-      const visibles = [...section.querySelectorAll('.nav-item')].filter(
-        li => li.style.display !== 'none'
-      );
-      if (!visibles.length) section.style.display = 'none';
-    });
-  });
-})();

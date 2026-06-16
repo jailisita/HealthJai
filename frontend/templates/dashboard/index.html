@@ -7,6 +7,19 @@
 
 {% block content %}
 
+<!-- Bienvenida por rol -->
+<div class="mb-4" id="welcome-banner">
+  <div class="d-flex align-items-center gap-3 p-3 rounded" style="background:linear-gradient(135deg,var(--violet-50),var(--violet-100));border:1px solid var(--violet-200)">
+    <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--violet-500),var(--violet-700));display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <i class="bi bi-person-badge text-white" style="font-size:1.2rem"></i>
+    </div>
+    <div>
+      <div class="fw-bold" style="font-size:.95rem;color:var(--violet-900)" id="welcome-title">Bienvenido</div>
+      <div style="font-size:.8rem;color:var(--violet-600)" id="welcome-sub">Cargando...</div>
+    </div>
+  </div>
+</div>
+
 <!-- KPI Cards principales -->
 <div class="row g-3 mb-4">
   <div class="col-sm-6 col-xl-3">

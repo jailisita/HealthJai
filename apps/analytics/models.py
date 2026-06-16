@@ -19,7 +19,11 @@ class EstadisticaClinica(models.Model):
 
     class Meta:
         verbose_name = 'Estadística Clínica'
+        verbose_name_plural = 'Estadísticas Clínicas'
         ordering = ['-fecha_calculo']
+        indexes = [
+            models.Index(fields=['fecha_calculo']),
+        ]
 
     def __str__(self):
         return f"Estadística {self.fecha_calculo.strftime('%Y-%m-%d %H:%M')}"

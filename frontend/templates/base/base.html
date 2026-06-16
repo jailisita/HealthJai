@@ -11,21 +11,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
   <style>
-    .rol-badge {
-      font-size: 9.5px; font-weight: 700; letter-spacing: 0.07em;
-      text-transform: uppercase; padding: 2px 7px; border-radius: 5px;
-    }
-    .rol-admin    { background: rgba(251,191,36,0.18); color: #d97706; }
-    .rol-doctor   { background: rgba(14,165,233,0.18); color: #0284c7; }
-    .rol-analista { background: rgba(124,58,237,0.22); color: var(--violet-500); }
+    .rol-badge { font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 7px;border-radius:5px; }
+    .rol-administrador { background:rgba(251,191,36,.18);color:#d97706; }
+    .rol-medico        { background:rgba(14,165,233,.18);color:#0284c7; }
+    .rol-analista      { background:rgba(124,58,237,.22);color:var(--violet-500); }
   </style>
 </head>
 <body>
 <div id="wrapper">
 
-  <!-- Sidebar -->
   <nav class="sidebar d-flex flex-column">
-
     <!-- Brand -->
     <div class="brand-block d-flex align-items-center gap-2">
       <div class="brand-icon">
@@ -37,98 +32,67 @@
       </div>
     </div>
 
-    <!-- Navigation -->
     <div class="flex-grow-1 p-2 pt-3">
+      <div class="sidebar-section nav-label">Navegación</div>
+      <ul class="nav flex-column">
+        <li class="nav-item" id="nav-dashboard">
+          <a href="/" class="nav-link {% block nav_dashboard %}{% endblock %}">
+            <i class="bi bi-grid-1x2"></i>Dashboard
+          </a>
+        </li>
+        <li class="nav-item" id="nav-pacientes">
+          <a href="/pacientes/" class="nav-link {% block nav_pacientes %}{% endblock %}">
+            <i class="bi bi-people"></i>Pacientes
+          </a>
+        </li>
+        <li class="nav-item" id="nav-etl">
+          <a href="/etl/" class="nav-link {% block nav_etl %}{% endblock %}">
+            <i class="bi bi-arrow-left-right"></i>Proceso ETL
+          </a>
+        </li>
+        <li class="nav-item" id="nav-ml">
+          <a href="/ml/" class="nav-link {% block nav_ml %}{% endblock %}">
+            <i class="bi bi-cpu"></i>Machine Learning
+          </a>
+        </li>
+        <li class="nav-item" id="nav-usuarios">
+          <a href="/usuarios/" class="nav-link {% block nav_usuarios %}{% endblock %}">
+            <i class="bi bi-shield-lock"></i>Usuarios
+          </a>
+        </li>
+      </ul>
 
-      <!-- SECCIÓN: Principal -->
-      <div class="sidebar-section">
-        <div class="nav-label">Principal</div>
-        <ul class="nav flex-column">
-          <!-- Dashboard: admin, doctor, analista -->
-          <li class="nav-item" data-permiso="dashboard">
-            <a href="/" class="nav-link {% block nav_dashboard %}{% endblock %}">
-              <i class="bi bi-grid-1x2"></i>Dashboard
-            </a>
-          </li>
-          <!-- Pacientes: admin, doctor -->
-          <li class="nav-item" data-permiso="pacientes">
-            <a href="/pacientes/" class="nav-link {% block nav_pacientes %}{% endblock %}">
-              <i class="bi bi-people"></i>Pacientes
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      <!-- SECCIÓN: Registros -->
-      <div class="sidebar-section" data-permiso="reportes">
-        <div class="nav-label">Registros</div>
-        <ul class="nav flex-column">
-          <li class="nav-item" data-permiso="reportes">
-            <a href="#" onclick="descargarArchivo('/api/reportes/csv/', 'pacientes.csv')" class="nav-link">
-              <i class="bi bi-filetype-csv"></i>CSV
-            </a>
-          </li>
-          <li class="nav-item" data-permiso="reportes">
-            <a href="#" onclick="descargarArchivo('/api/reportes/excel/', 'reporte_pacientes.xlsx')" class="nav-link">
-              <i class="bi bi-file-earmark-excel"></i>Excel
-            </a>
-          </li>
-          <li class="nav-item" data-permiso="reportes">
-            <a href="#" onclick="descargarArchivo('/api/reportes/pdf/', 'reporte_analitica_clinica.pdf')" class="nav-link">
-              <i class="bi bi-file-earmark-pdf"></i>PDF
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      <!-- SECCIÓN: Procesamiento — analista, admin -->
-      <div class="sidebar-section">
-        <div class="nav-label">Procesamiento</div>
-        <ul class="nav flex-column">
-          <li class="nav-item" data-permiso="etl">
-            <a href="/etl/" class="nav-link {% block nav_etl %}{% endblock %}">
-              <i class="bi bi-arrow-left-right"></i>Proceso ETL
-            </a>
-          </li>
-          <li class="nav-item" data-permiso="ml">
-            <a href="/ml/" class="nav-link {% block nav_ml %}{% endblock %}">
-              <i class="bi bi-cpu"></i>Machine Learning
-            </a>
-          </li>
-        </ul>
-      </div>
-
+      <div class="sidebar-section nav-label mt-2" id="nav-reportes">Reportes</div>
+      <ul class="nav flex-column" id="nav-reportes-links">
+        <li class="nav-item">
+          <a href="#" onclick="descargarArchivo('/api/reportes/pdf/', 'sada_ips_reporte_clinico.pdf')" class="nav-link">
+            <i class="bi bi-file-earmark-pdf"></i>Exportar PDF
+          </a>
+        </li>
+      </ul>
     </div>
 
     <!-- Footer -->
     <div class="sidebar-footer d-flex align-items-center justify-content-between">
-      <div style="min-width:0">
-        <div class="d-flex align-items-center gap-2">
-          <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--violet-500),var(--violet-700));display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <i class="bi bi-person-fill text-white" style="font-size:0.75rem"></i>
-          </div>
-          <div style="min-width:0">
-            <div class="user-name" id="usuario-nombre">—</div>
-            <span id="usuario-rol" class="rol-badge"></span>
-          </div>
+      <div class="d-flex align-items-center gap-2" style="min-width:0">
+        <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--violet-500),var(--violet-700));display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="bi bi-person-fill text-white" style="font-size:.75rem"></i>
+        </div>
+        <div style="min-width:0">
+          <div class="user-name" id="usuario-nombre">—</div>
+          <span id="usuario-rol" class="rol-badge"></span>
         </div>
       </div>
       <button class="btn-logout" onclick="cerrarSesion()" title="Cerrar sesión">
-        <i class="bi bi-box-arrow-right" style="font-size:0.875rem"></i>
+        <i class="bi bi-box-arrow-right" style="font-size:.875rem"></i>
       </button>
     </div>
   </nav>
 
-  <!-- Main content -->
   <div class="main-content">
     <header class="topbar">
       <h5 class="page-title mb-0">{% block page_title %}Dashboard{% endblock %}</h5>
-      <div class="d-flex align-items-center gap-2">
-        <div class="status-pill">
-          <span class="dot"></span>
-          Sistema Activo
-        </div>
-      </div>
+      <div class="status-pill"><span class="dot"></span>Sistema Activo</div>
     </header>
     <main class="content-area">
       {% block content %}{% endblock %}

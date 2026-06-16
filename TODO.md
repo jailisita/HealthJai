@@ -1,22 +1,10 @@
-# TODO - Reto técnico ETL (Django + JS)
+# TODO
 
-## Paso 1
-- [x] Revisar implementación actual de frontend `etl.js` y backend `apps/etl/views.py`.
-
-## Paso 2 (Frontend)
-- [x] Corregir `frontend/static/js/etl.js` para enviar correctamente `FormData` y parsear errores detallados del backend.
-- [x] Hacer que el frontend muestre errores detallados devueltos por el backend (JSON con `error/detalle/logs`).
-
-## Paso 3 (Backend)
-- [x] Corregir backend `apps/etl/views.py` (vista `subir_dataset`) con `try/except` robusto y respuestas JSON consistentes y con códigos HTTP correctos.
-
-
-## Paso 4
-- [ ] Validar que la lectura de Excel funcione (si falta, instalar `openpyxl`).
-
-## Paso 5
-- [ ] Ejecutar pruebas manuales: subir `dataset_clinico.xlsx` y un CSV; verificar UI y errores.
-
-
-
+## Usuarios — flujo crear antes del formulario
+- [ ] Modificar `frontend/templates/auth/usuarios.html` para que el formulario esté oculto por defecto y aparezca al presionar botón “Crear usuario”.
+- [ ] Ajustar `frontend/static/js/usuarios.js` para que el submit funcione igual y limpiar/ajustar mensajes al abrir el formulario.
+- [ ] Probar manualmente en `/usuarios/` que:
+  - [ ] el formulario no se muestre al cargar
+  - [ ] el botón lo muestre
+  - [ ] al crear usuario se actualice la tabla
 

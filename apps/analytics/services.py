@@ -1,5 +1,5 @@
 """
-Módulo de Analítica de Datos - HealthAnalytics IPS
+Módulo de Analítica de Datos - SADA IPS
 Estadística descriptiva, KPIs clínicos, segmentación
 """
 import pandas as pd
@@ -106,6 +106,22 @@ def distribucion_imc() -> dict:
           .annotate(total=Count('id'))
           .order_by('-total'))
     return {r['clasificacion_imc']: r['total'] for r in qs if r['clasificacion_imc']}
+
+
+def distribucion_sexo() -> dict:
+    """Distribución por sexo."""
+    qs = (Paciente.objects.values('sexo')
+          .annotate(total=Count('id'))
+          .order_by('sexo'))
+    return {r['sexo'] or 'Sin dato': r['total'] for r in qs}
+
+
+def distribucion_actividad_fisica() -> dict:
+    """Distribución por nivel de actividad física."""
+    qs = (Paciente.objects.values('actividad_fisica')
+          .annotate(total=Count('id'))
+          .order_by('-total'))
+    return {r['actividad_fisica'] or 'Sin dato': r['total'] for r in qs if r['actividad_fisica']}
 
 
 def tendencia_consultas_mensual() -> list:

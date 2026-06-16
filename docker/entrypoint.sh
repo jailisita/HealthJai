@@ -11,7 +11,7 @@ echo "▶ Creando superusuario si no existe..."
 python manage.py shell -c "
 from apps.authentication.models import Usuario
 if not Usuario.objects.filter(username='admin').exists():
-    Usuario.objects.create_superuser('admin', 'admin@healthanalytics.co', 'admin123', rol='administrador')
+    Usuario.objects.create_superuser('admin', 'admin@sadaips.co', 'admin123', rol='administrador')
     print('  Superusuario creado: admin / admin123')
 "
 

@@ -29,46 +29,63 @@ async function ejecutarETL() {
 }
 
 async function subirDataset() {
-  const input = document.getElementById('archivo-dataset');
-  if (!input.files.length) { alert('Selecciona un archivo primero.'); return; }
+  const input    = document.getElementById('archivo-dataset');
+  const btnSub   = document.querySelector('button[onclick="subirDataset()"]');
+  const progress = document.getElementById('etl-progress');
+
+  if (!input.files.length) { showToast('Selecciona un archivo CSV o Excel primero.', 'warning'); return; }
+  const ext = input.files[0].name.split('.').pop().toLowerCase();
+  if (!['csv','xlsx','xls'].includes(ext)) { showToast('Formato no soportado. Usa .csv, .xlsx o .xls', 'danger'); return; }
 
   const formData = new FormData();
   formData.append('archivo', input.files[0]);
 
-  const progress = document.getElementById('etl-progress');
+  btnSub.disabled = true;
+  btnSub.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Subiendo...';
   progress.classList.remove('d-none');
+  document.getElementById('etl-resultado').classList.add('d-none');
 
   try {
-    const res = await authFetch('/api/etl/upload/', {
-      method: 'POST',
-      // Importante: NO setear Content-Type manualmente (FormData lo hace automáticamente)
-      body: formData
-    });
-
+    const res = await authFetch('/api/etl/upload/', { method: 'POST', body: formData });
     if (!res) return;
-
-    // Parsear JSON si es posible; si no, devolver texto.
-    const contentType = res.headers.get('content-type') || '';
-    const data = contentType.includes('application/json')
-      ? await res.json().catch(() => ({}))
-      : { error: await res.text().catch(() => 'Respuesta no-JSON del servidor') };
+    const ct   = res.headers.get('content-type') || '';
+    const data = ct.includes('application/json') ? await res.json().catch(() => ({})) : { error: await res.text() };
 
     if (res.ok) {
       mostrarResultado(data);
       cargarHistorial();
+      input.value = '';
+      showToast(`ETL completado: ${data.registros_limpios ?? 0} registros procesados.`, 'success');
     } else {
-      const detalle = data.detalle || data.logs || data.message || data.error || JSON.stringify(data);
-      alert(`Error al subir: ${detalle}`);
+      const msg = data.detalle || data.error || JSON.stringify(data);
+      showToast('Error: ' + msg, 'danger');
+      if (data.log_detalle) {
+        document.getElementById('etl-resultado').classList.remove('d-none');
+        document.getElementById('etl-log').textContent = data.log_detalle;
+      }
     }
-  } catch (e) {
-    alert('Error de conexión: ' + e.message);
+  } catch(e) {
+    showToast('Error de conexión: ' + e.message, 'danger');
   } finally {
     progress.classList.add('d-none');
+    btnSub.disabled = false;
+    btnSub.innerHTML = '<i class="bi bi-upload me-2"></i>Subir y Procesar';
   }
 }
 
-
-// subirDataset() definido una sola vez arriba (evita sobrescritura).
+function showToast(msg, type='info') {
+  const prev = document.getElementById('etl-toast');
+  if (prev) prev.remove();
+  const C = { success:'#14b8a6', danger:'#f43f5e', warning:'#fbbf24', info:'#7c3aed' };
+  const t = document.createElement('div');
+  t.id = 'etl-toast';
+  t.style.cssText = `position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;background:#fff;
+    border-left:4px solid ${C[type]||C.info};border-radius:10px;padding:.75rem 1.1rem;
+    box-shadow:0 6px 24px rgba(76,29,149,.15);font-size:.875rem;color:#1e1b29;max-width:360px`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 5000);
+}
 
 function mostrarResultado(data) {
   const sec = document.getElementById('etl-resultado');

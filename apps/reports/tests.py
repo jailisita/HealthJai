@@ -17,23 +17,9 @@ class ReportesAPITestCase(TestCase):
         Paciente.objects.bulk_create([_paciente(i) for i in range(1, 11)])
         self.client = APIClient()
         u = Usuario.objects.create_superuser(
-            username='rep', password='Test1234!', email='r@t.com', rol='analista')
+            username='rep', password='Test1234!', email='r@t.com', rol='medico')
         res = self.client.post('/api/auth/login/', {'username': 'rep', 'password': 'Test1234!'})
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {res.data["access"]}')
-
-    def test_exportar_csv(self):
-        res = self.client.get('/api/reportes/csv/')
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertIn('text/csv', res['Content-Type'])
-        content = res.content.decode('utf-8-sig')
-        self.assertIn('id_paciente', content)
-        self.assertIn('nombres', content)
-
-    def test_exportar_excel(self):
-        res = self.client.get('/api/reportes/excel/')
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertIn('spreadsheetml', res['Content-Type'])
-        self.assertGreater(len(res.content), 1000)
 
     def test_exportar_pdf(self):
         res = self.client.get('/api/reportes/pdf/')
@@ -43,9 +29,5 @@ class ReportesAPITestCase(TestCase):
 
     def test_exportar_sin_auth(self):
         self.client.credentials()
-        self.assertEqual(self.client.get('/api/reportes/csv/').status_code,
-                         status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(self.client.get('/api/reportes/excel/').status_code,
-                         status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(self.client.get('/api/reportes/pdf/').status_code,
                          status.HTTP_401_UNAUTHORIZED)

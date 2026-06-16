@@ -19,7 +19,12 @@ class ModeloML(models.Model):
 
     class Meta:
         verbose_name = 'Modelo ML'
+        verbose_name_plural = 'Modelos ML'
         ordering = ['-fecha_entrenamiento']
+        indexes = [
+            models.Index(fields=['algoritmo']),
+            models.Index(fields=['activo']),
+        ]
 
     def __str__(self):
         return f"{self.nombre} - {self.get_algoritmo_display()} (Acc: {self.accuracy})"
@@ -35,4 +40,9 @@ class PrediccionPaciente(models.Model):
 
     class Meta:
         verbose_name = 'Predicción'
+        verbose_name_plural = 'Predicciones'
         ordering = ['-fecha_prediccion']
+        indexes = [
+            models.Index(fields=['riesgo_predicho']),
+            models.Index(fields=['fecha_prediccion']),
+        ]

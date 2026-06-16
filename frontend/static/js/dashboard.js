@@ -17,7 +17,20 @@ Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
 Chart.defaults.font.size   = 12;
 Chart.defaults.color       = '#9893ae';
 
+function mostrarBienvenida() {
+  const rol = getRol();
+  const msgs = {
+    administrador: { title: 'Bienvenido, Administrador', sub: 'Tienes control total del sistema. Gestiona pacientes, procesos ETL y modelos de ML.' },
+    medico:        { title: 'Bienvenido, Médico',        sub: 'Consulta y gestiona la información clínica de tus pacientes.' },
+    analista:      { title: 'Bienvenido, Analista',      sub: 'Supervisa los procesos ETL y los modelos de machine learning.' },
+  };
+  const msg = msgs[rol] || { title: 'Bienvenido', sub: 'Panel de control clínico' };
+  document.getElementById('welcome-title').textContent = msg.title;
+  document.getElementById('welcome-sub').textContent  = msg.sub;
+}
+
 async function cargarDashboard() {
+  mostrarBienvenida();
   try {
     const res = await authFetch('/api/dashboard/kpis/');
     if (!res || !res.ok) return;

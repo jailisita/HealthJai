@@ -1,6 +1,7 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from apps.authentication.permissions import EsAnalista
 from .services import (
     obtener_estadisticas_descriptivas, obtener_kpis,
     segmentacion_por_edad, segmentacion_por_diagnostico,
@@ -9,17 +10,17 @@ from .services import (
 )
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, EsAnalista])
 def kpis(request):
     return Response(obtener_kpis())
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, EsAnalista])
 def estadisticas_descriptivas(request):
     return Response(obtener_estadisticas_descriptivas())
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, EsAnalista])
 def segmentacion(request):
     return Response({
         'por_edad': segmentacion_por_edad(),
@@ -28,12 +29,12 @@ def segmentacion(request):
     })
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, EsAnalista])
 def tendencias(request):
     return Response({'consultas_mensuales': tendencia_consultas_mensual()})
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, EsAnalista])
 def generar_snapshot(request):
     snap = guardar_estadisticas_snapshot()
     return Response({'mensaje': 'Snapshot guardado', 'id': snap.id})

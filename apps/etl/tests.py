@@ -147,7 +147,7 @@ class ETLAPITestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = Usuario.objects.create_superuser(
-            username='etluser', password='Test1234!', email='e@test.com', rol='analista'
+            username='etluser', password='Test1234!', email='e@test.com', rol='administrador'
         )
         res = self.client.post('/api/auth/login/',
                                {'username': 'etluser', 'password': 'Test1234!'})

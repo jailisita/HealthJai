@@ -1,13 +1,17 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from apps.analytics.services import obtener_kpis, segmentacion_por_edad
-from apps.analytics.services import distribucion_imc, segmentacion_por_diagnostico
+from apps.authentication.permissions import EsMedico, EsAnalista
+from apps.analytics.services import (
+    obtener_kpis, segmentacion_por_edad, distribucion_imc,
+    segmentacion_por_diagnostico, distribucion_sexo,
+    distribucion_actividad_fisica, tendencia_consultas_mensual,
+)
 from apps.etl.models import HistorialETL, Paciente
 from apps.ml.models import ModeloML
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, EsMedico | EsAnalista])
 def dashboard_kpis(request):
     kpis = obtener_kpis()
     ultimo_etl = HistorialETL.objects.first()
@@ -28,5 +32,8 @@ def dashboard_kpis(request):
             'segmentacion_edad': segmentacion_por_edad(),
             'distribucion_imc': distribucion_imc(),
             'top_diagnosticos': segmentacion_por_diagnostico(),
+            'distribucion_sexo': distribucion_sexo(),
+            'actividad_fisica': distribucion_actividad_fisica(),
+            'tendencias': tendencia_consultas_mensual(),
         }
     })

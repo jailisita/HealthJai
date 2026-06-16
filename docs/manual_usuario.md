@@ -1,4 +1,4 @@
-# Manual de Usuario — HealthAnalytics IPS
+# Manual de Usuario — SADA IPS
 
 ## 1. Acceso al Sistema
 

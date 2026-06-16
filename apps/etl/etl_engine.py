@@ -1,5 +1,5 @@
 """
-Motor ETL Principal - HealthAnalytics IPS
+Motor ETL Principal - SADA IPS
 Proceso completo: Extract → Transform → Load
 """
 import pandas as pd
@@ -20,6 +20,7 @@ def extract(filepath: str) -> tuple[pd.DataFrame, dict]:
     """Lee el archivo Excel/CSV y retorna el DataFrame crudo + metadata."""
     inicio = time.time()
     logs = []
+    filepath = str(filepath)
 
     if filepath.endswith('.xlsx') or filepath.endswith('.xls'):
         df = pd.read_excel(filepath, engine='openpyxl')
@@ -73,34 +74,6 @@ RANGOS_CLINICOS = {
 }
 
 
-def _reemplazar_texto_presion(df, logs):
-    """
-    Sustituye valores textuales en columnas de presión arterial por valores numéricos
-    predeterminados, ANTES de la conversión de tipos:
-      alto / alta / high  → 140
-      bajo / baja / low   →  90
-    Detecta cualquier columna cuyo nombre contenga 'presi' (presión/presion).
-    """
-    MAPA = {
-        'alto': 140, 'alta': 140, 'high': 140,
-        'bajo':  90, 'baja':  90, 'low':   90,
-    }
-    cols_presion = [c for c in df.columns if 'presi' in c.lower()]
-    reemplazados = 0
-    for col in cols_presion:
-        serie_lower = df[col].astype(str).str.strip().str.lower()
-        mask = serie_lower.isin(MAPA)
-        if mask.any():
-            df.loc[mask, col] = serie_lower[mask].map(MAPA)
-            reemplazados += int(mask.sum())
-    if reemplazados:
-        logs.append(
-            f"[TRANSFORM] Presión arterial — {reemplazados} valor(es) textual(es) "
-            f"corregidos (alto→140, bajo→90)"
-        )
-    return df, reemplazados
-
-
 def _limpiar_tipos(df: pd.DataFrame, logs: list) -> tuple[pd.DataFrame, int]:
     """Convierte tipos incorrectos; registra cuántos se corrigieron."""
     corregidos = 0
@@ -110,10 +83,18 @@ def _limpiar_tipos(df: pd.DataFrame, logs: list) -> tuple[pd.DataFrame, int]:
         'frecuencia_cardiaca': 'int', 'glucosa': 'float',
         'colesterol': 'float', 'saturación_oxígeno': 'float', 'temperatura': 'float',
     }
+    PRESION_MAP = {
+        'alto': 140, 'alta': 140, 'high': 140,
+        'bajo': 90,  'baja': 90,  'low': 90,
+    }
     for col, tipo in col_map.items():
         if col not in df.columns:
             continue
         antes = df[col].dtype
+        if col in ('presión_sistólica', 'presión_diastólica', 'presion_sistolica', 'presion_diastolica'):
+            mapped = df[col].astype(str).str.strip().str.lower().map(PRESION_MAP)
+            mask = mapped.notna()
+            df.loc[mask, col] = mapped[mask]
         df[col] = pd.to_numeric(df[col], errors='coerce')
         if tipo == 'int':
             df[col] = df[col].astype('Int64')
@@ -138,6 +119,15 @@ def _tratar_nulos(df: pd.DataFrame, logs: list) -> tuple[pd.DataFrame, int]:
     for col in ['peso', 'glucosa', 'colesterol', 'temperatura', 'IMC']:
         if col in df.columns:
             df[col] = df[col].fillna(df[col].median())
+    # Presión arterial → valores predeterminados
+    if 'presión_sistólica' in df.columns:
+        df['presión_sistólica'] = df['presión_sistólica'].fillna(140)
+    elif 'presion_sistolica' in df.columns:
+        df['presion_sistolica'] = df['presion_sistolica'].fillna(140)
+    if 'presión_diastólica' in df.columns:
+        df['presión_diastólica'] = df['presión_diastólica'].fillna(90)
+    elif 'presion_diastolica' in df.columns:
+        df['presion_diastolica'] = df['presion_diastolica'].fillna(90)
     # Categóricas → moda
     for col in ['sexo', 'actividad_física', 'diagnóstico_preliminar', 'riesgo_enfermedad']:
         if col in df.columns and df[col].isnull().any():
@@ -213,14 +203,36 @@ def _calcular_imc(df: pd.DataFrame, logs: list) -> pd.DataFrame:
     return df
 
 
+def _ignorar_basura(df: pd.DataFrame, logs: list) -> tuple[pd.DataFrame, int]:
+    criterios = df['id_paciente'].isna()
+    for col in ['nombres', 'apellidos']:
+        if col in df.columns:
+            criterios |= df[col].astype(str).str.strip().eq('')
+    columnas_clinicas = ['edad', 'peso', 'altura', 'glucosa', 'colesterol',
+                         'temperatura', 'frecuencia_cardiaca',
+                         'presión_sistólica', 'presion_sistolica',
+                         'presión_diastólica', 'presion_diastolica',
+                         'saturación_oxígeno', 'saturacion_oxigeno']
+    cols_existentes = [c for c in columnas_clinicas if c in df.columns]
+    nulos_por_fila = df[cols_existentes].isna().sum(axis=1)
+    criterios |= nulos_por_fila > len(cols_existentes) * 0.6
+    ignorados = int(criterios.sum())
+    if ignorados:
+        df = df[~criterios].copy()
+        logs.append(f"[TRANSFORM] {ignorados} registros ignorados por datos basura")
+    return df, ignorados
+
+
 def _detectar_criticos(df: pd.DataFrame, logs: list) -> pd.DataFrame:
-    df['es_critico'] = (
+    critico_clinico = (
         (df.get('presion_sistolica', pd.Series(dtype=float)) > 180) |
         (df.get('glucosa', pd.Series(dtype=float)) > 300) |
         (df.get('saturacion_oxigeno', pd.Series(dtype=float)) < 85)
     ).fillna(False)
+    critico_etiqueta = (df.get('riesgo_enfermedad', pd.Series(dtype=str)) == 'critico').fillna(False)
+    df['es_critico'] = critico_clinico | critico_etiqueta
     criticos = int(df['es_critico'].sum())
-    logs.append(f"[TRANSFORM] Pacientes críticos detectados: {criticos}")
+    logs.append(f"[TRANSFORM] Pacientes críticos (clínico|etiqueta): {criticos}")
     return df
 
 
@@ -228,9 +240,9 @@ def transform(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     logs = []
     df = df.copy()
 
-    df, _ = _reemplazar_texto_presion(df, logs)
     df, corregidos = _limpiar_tipos(df, logs)
     df, duplicados = _eliminar_duplicados(df, logs)
+    df, ignorados = _ignorar_basura(df, logs)
     df, nulos = _tratar_nulos(df, logs)
     df = _validar_rangos(df, logs)
     df = _normalizar_categoricas(df, logs)
@@ -243,6 +255,7 @@ def transform(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
         'registros_limpios': len(df),
         'duplicados_eliminados': duplicados,
         'nulos_tratados': nulos,
+        'registros_ignorados': ignorados,
     }
 
 

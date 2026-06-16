@@ -1,4 +1,4 @@
-# Documentación Técnica — HealthAnalytics IPS
+# Documentación Técnica — SADA IPS
 
 ## Tabla de Contenidos
 1. [Arquitectura del Sistema](#arquitectura)
@@ -227,7 +227,7 @@ Authorization: Bearer <access_token>
 // Response 200
 {
   "id": 1, "username": "admin",
-  "email": "admin@healthanalytics.co",
+  "email": "admin@sadaips.co",
   "rol": "administrador"
 }
 ```
@@ -376,7 +376,7 @@ Descarga Excel `.xlsx` con celdas coloreadas según nivel de riesgo.
 
 ### Desarrollo local (SQLite)
 ```bash
-git clone <repo> && cd healthcare-etl-platform
+git clone <repo> && cd sada-ips
 chmod +x setup.sh && ./setup.sh
 # Copiar dataset a datasets/dataset_clinico.xlsx
 python manage.py cargar_dataset

@@ -13,6 +13,19 @@ class Usuario(AbstractUser):
     class Meta:
         verbose_name = 'Usuario'
         verbose_name_plural = 'Usuarios'
+        indexes = [
+            models.Index(fields=['rol']),
+            models.Index(fields=['email']),
+        ]
 
     def __str__(self):
         return f"{self.username} ({self.get_rol_display()})"
+
+    def es_administrador(self):
+        return self.rol == 'administrador'
+
+    def es_medico(self):
+        return self.rol in ['administrador', 'medico']
+
+    def es_analista(self):
+        return self.rol in ['administrador', 'analista']
