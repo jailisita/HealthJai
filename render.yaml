@@ -16,11 +16,11 @@ services:
       - key: ALLOWED_HOSTS
         value: ".onrender.com,localhost,127.0.0.1"
       - key: RENDER_EXTERNAL_HOSTNAME
-        value: "sada-ips.onrender.com"
+        value: "healthjai.onrender.com"
       - key: CORS_ALLOWED_ORIGINS
-        value: "https://sada-ips.onrender.com,http://localhost:3000,http://127.0.0.1:8000"
+        value: "https://healthjai.onrender.com,http://localhost:3000,http://127.0.0.1:8000"
       - key: CSRF_TRUSTED_ORIGINS
-        value: "https://sada-ips.onrender.com"
+        value: "https://healthjai.onrender.com"
       - key: JWT_ACCESS_TOKEN_LIFETIME_MINUTES
         value: "60"
       - key: JWT_REFRESH_TOKEN_LIFETIME_DAYS
