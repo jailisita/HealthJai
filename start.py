@@ -1,6 +1,9 @@
 import os
 import sys
+import time
 import django
+from django.db import connections
+from django.db.utils import OperationalError
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -9,17 +12,31 @@ def run(*args):
     from django.core.management import call_command
     call_command(*args)
 
+def wait_for_db(max_retries=30, interval=2):
+    django.setup()
+    db_conn = connections['default']
+    for i in range(max_retries):
+        try:
+            db_conn.ensure_connection()
+            print("→ Base de datos conectada")
+            return
+        except OperationalError as e:
+            if i < max_retries - 1:
+                print(f"  Esperando base de datos ({i+1}/{max_retries})...")
+                time.sleep(interval)
+            else:
+                print(f"✗ No se pudo conectar a la base de datos: {e}")
+                sys.exit(1)
+
 def main():
     port = os.environ.get('PORT', '8000')
 
+    wait_for_db()
+
     print("→ Running migrations...")
-    try:
-        run('migrate', '--noinput')
-    except Exception as e:
-        print(f"⚠️  Migration failed: {e}")
+    run('migrate', '--noinput')
 
     print("→ Creating users if not exists...")
-    django.setup()
     from apps.authentication.models import Usuario
 
     usuarios = [
@@ -36,10 +53,7 @@ def main():
 
     if os.environ.get('DISABLE_COLLECTSTATIC') != '1':
         print("→ Collecting static files...")
-        try:
-            run('collectstatic', '--noinput', '--clear')
-        except Exception as e:
-            print(f"⚠️  Collectstatic failed: {e}")
+        run('collectstatic', '--noinput', '--clear')
 
     print(f"→ Starting gunicorn on 0.0.0.0:{port}...")
     from gunicorn.app.wsgiapp import run as gunicorn_run
