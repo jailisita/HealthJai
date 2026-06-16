@@ -24,8 +24,8 @@ def main():
 
     usuarios = [
         ('admin',     'admin@sadaips.co',    'admin123',    'administrador'),
-        ('medico1',   'medico1@sadaips.co',  'medico123',   'medico'),
-        ('analista1', 'analista1@sadaips.co','analista123', 'analista'),
+        ('medico',    'medico@sadaips.co',   'medico123',   'medico'),
+        ('analista',  'analista@sadaips.co', 'analista123', 'analista'),
     ]
     for username, email, password, rol in usuarios:
         if not Usuario.objects.filter(username=username).exists():
