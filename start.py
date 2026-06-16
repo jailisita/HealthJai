@@ -18,14 +18,21 @@ def main():
     except Exception as e:
         print(f"⚠️  Migration failed: {e}")
 
-    print("→ Creating superuser if not exists...")
+    print("→ Creating users if not exists...")
     django.setup()
     from apps.authentication.models import Usuario
-    if not Usuario.objects.filter(username='admin').exists():
-        Usuario.objects.create_superuser('admin', 'admin@sadaips.co', 'admin123', rol='administrador')
-        print('  ✓ Superusuario creado: admin / admin123')
-    else:
-        print('  → Superusuario ya existe')
+
+    usuarios = [
+        ('admin',     'admin@sadaips.co',    'admin123',    'administrador'),
+        ('medico1',   'medico1@sadaips.co',  'medico123',   'medico'),
+        ('analista1', 'analista1@sadaips.co','analista123', 'analista'),
+    ]
+    for username, email, password, rol in usuarios:
+        if not Usuario.objects.filter(username=username).exists():
+            Usuario.objects.create_superuser(username, email, password, rol=rol)
+            print(f'  ✓ {username} creado ({rol})')
+        else:
+            print(f'  → {username} ya existe')
 
     if os.environ.get('DISABLE_COLLECTSTATIC') != '1':
         print("→ Collecting static files...")
