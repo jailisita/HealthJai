@@ -140,12 +140,6 @@ def ejecutar_etl_view(request):
     return Response(HistorialETLSerializer(historial).data)
 
 
-@extend_schema(
-    tags=['etl'],
-    summary='Subir dataset y ejecutar ETL',
-    description='Sube un archivo CSV o Excel. El proceso ETL se ejecuta automáticamente.',
-    responses={200: HistorialETLSerializer},
-)
 def _procesar_upload_async(destino, user_id):
     import django
     django.setup()
@@ -156,6 +150,12 @@ def _procesar_upload_async(destino, user_id):
     except Exception:
         pass
 
+@extend_schema(
+    tags=['etl'],
+    summary='Subir dataset y ejecutar ETL',
+    description='Sube un archivo CSV o Excel. El proceso ETL se ejecuta automáticamente.',
+    responses={200: HistorialETLSerializer},
+)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, EsAnalista])
 @parser_classes([MultiPartParser])
