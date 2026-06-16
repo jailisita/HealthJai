@@ -1,4 +1,5 @@
 import os
+import threading
 from django.conf import settings
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, permission_classes, parser_classes
@@ -145,6 +146,16 @@ def ejecutar_etl_view(request):
     description='Sube un archivo CSV o Excel. El proceso ETL se ejecuta automáticamente.',
     responses={200: HistorialETLSerializer},
 )
+def _procesar_upload_async(destino, user_id):
+    import django
+    django.setup()
+    from django.contrib.auth import get_user_model
+    try:
+        user = get_user_model().objects.get(pk=user_id)
+        ejecutar_etl(destino, usuario=user)
+    except Exception:
+        pass
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, EsAnalista])
 @parser_classes([MultiPartParser])
@@ -167,17 +178,19 @@ def subir_dataset(request):
             for chunk in archivo.chunks():
                 f.write(chunk)
 
-        historial = ejecutar_etl(destino, usuario=request.user)
-        data = HistorialETLSerializer(historial).data
+        hilo = threading.Thread(
+            target=_procesar_upload_async,
+            args=(destino, request.user.pk),
+            daemon=True,
+        )
+        hilo.start()
 
-        if historial.estado == 'error':
-            # En caso de error de ETL, devolver 400/422 para que el frontend sepa que falló.
-            return Response(data, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
-        return Response(data, status=status.HTTP_200_OK)
+        return Response(
+            {'mensaje': 'Archivo subido. El ETL se está procesando en segundo plano.'},
+            status=status.HTTP_202_ACCEPTED,
+        )
 
     except Exception as e:
-        # Intentar devolver detalle estructurado al frontend
         detalle = str(e)
         error_tipo = e.__class__.__name__
         return Response(

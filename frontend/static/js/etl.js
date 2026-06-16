@@ -48,6 +48,30 @@ async function subirDataset() {
   try {
     const res = await authFetch('/api/etl/upload/', { method: 'POST', body: formData });
     if (!res) return;
+
+    if (res.status === 202) {
+      showToast('Archivo subido. Procesando ETL en segundo plano...', 'info');
+      input.value = '';
+      let esperando = true;
+      while (esperando) {
+        await new Promise(r => setTimeout(r, 2000));
+        const histRes = await authFetch('/api/etl/historial/');
+        if (!histRes) continue;
+        const histData = await histRes.json();
+        if (histData.length && histData[0].estado !== 'pendiente' && histData[0].estado !== 'en_proceso') {
+          esperando = false;
+          cargarHistorial();
+          const ultimo = histData[0];
+          if (ultimo.estado === 'completado') {
+            showToast(`ETL completado: ${ultimo.registros_limpios ?? 0} registros procesados.`, 'success');
+          } else {
+            showToast('Error en el procesamiento ETL', 'danger');
+          }
+        }
+      }
+      return;
+    }
+
     const ct   = res.headers.get('content-type') || '';
     const data = ct.includes('application/json') ? await res.json().catch(() => ({})) : { error: await res.text() };
 
