@@ -76,7 +76,7 @@ def entrenar(request):
              'required': ['paciente_id']}},
 )
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, EsMedico])
+@permission_classes([IsAuthenticated, EsMedico | EsAnalista])
 def predecir(request):
     paciente_id = request.data.get('paciente_id')
     if not paciente_id:
