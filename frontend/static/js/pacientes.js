@@ -2,18 +2,20 @@
 
 let paginaActual = 1;
 let totalPaginas = 1;
-let todosLosPacientes = [];
+let timeoutBusqueda = null;
 
 async function cargarPacientes(pagina = 1) {
   paginaActual = pagina;
   const riesgo  = document.getElementById('filtro-riesgo').value;
   const sexo    = document.getElementById('filtro-sexo').value;
   const critico = document.getElementById('filtro-critico').checked;
+  const q       = document.getElementById('busqueda').value.trim();
 
   let url = `/api/pacientes/?page=${pagina}`;
   if (riesgo)  url += `&riesgo=${riesgo}`;
   if (sexo)    url += `&sexo=${sexo}`;
   if (critico) url += `&critico=true`;
+  if (q)       url += `&busqueda=${encodeURIComponent(q)}`;
 
   const tbody = document.getElementById('pacientes-tbody');
   tbody.innerHTML = `<tr><td colspan="11" class="text-center py-4">
@@ -27,7 +29,6 @@ async function cargarPacientes(pagina = 1) {
     const resultados = data.results ?? data;
     const total = data.count ?? resultados.length;
     totalPaginas = data.next || data.previous ? Math.ceil(total / 50) : 1;
-    todosLosPacientes = resultados;
     renderTabla(resultados);
     document.getElementById('badge-total').textContent = total;
     document.getElementById('pagination-info').textContent =
@@ -78,13 +79,8 @@ function renderTabla(pacientes) {
 }
 
 function filtrarLocal() {
-  const q = document.getElementById('busqueda').value.toLowerCase();
-  if (!q) { renderTabla(todosLosPacientes); return; }
-  renderTabla(todosLosPacientes.filter(p =>
-    `${p.nombres} ${p.apellidos}`.toLowerCase().includes(q) ||
-    (p.diagnostico_preliminar || '').toLowerCase().includes(q) ||
-    String(p.id_paciente).includes(q)
-  ));
+  clearTimeout(timeoutBusqueda);
+  timeoutBusqueda = setTimeout(() => cargarPacientes(1), 300);
 }
 
 function renderPaginacion() {
